@@ -292,10 +292,6 @@ export default class {
                         BABYLON.Vector3.CrossToRef(start, axis1, axis2);
                         BABYLON.Vector3.CrossToRef(axis2, axis1, axis3);
                         this.currentElement.mesh.rotation = BABYLON.Vector3.RotationFromAxis(axis3.negate(), axis1, axis2);
-
-                        //TODO SubRotation
-                        //mesh.subRotationQuaternion = options.pickedMeshRotationQuaternion;
-                        //this.mergeRotations(mesh);
                     }
                     break;
             }
@@ -468,17 +464,14 @@ export default class {
         this.supportPlane.zeroPoint = parentMesh.getAbsolutePosition().clone();
 
         //Если было указано вращение плоскости
-        if (rotation) {
-            //После того как матрица вспомогательной плоскости обновится после вращения
-            this.supportPlane.registerAfterWorldMatrixUpdate(() => {
-                //Сохраняем координату указателя на плоскости
-                this.supportPlane.startPoint = this.getPointOnSupportPlane();
-            })
-        } else {
-            //Иначе берем координату указателя сразу
-            this.supportPlane.startPoint = this.getPointOnSupportPlane();
-        }
 
+        //После того как матрица вспомогательной плоскости обновится после вращения
+        this.supportPlane.registerAfterWorldMatrixUpdate(() => {
+            //Сохраняем координату указателя на плоскости
+            this.supportPlane.startPoint = this.getPointOnSupportPlane();
+        });
+
+        this.supportPlane.startPoint = this.getPointOnSupportPlane();
     }
 
     /**
