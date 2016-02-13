@@ -28,7 +28,7 @@ export default class {
             shift: 0,
         };
 
-        //Возможные режимы редактирования редактирования элемента
+        //Возможные режимы редактирования элемента
         this.modes = {
             MOVE: 1,
             ROTATE: 2,
@@ -188,6 +188,7 @@ export default class {
                     if (currentPointOnSupportPlane) {
                         diff = currentPointOnSupportPlane.subtract(this.supportPlane.zeroPoint);
                         this.currentControlMesh.position.x += diff.x;
+                        this.currentElement.mesh.setAbsolutePosition(this.currentControlMesh.position);
                         this.supportPlane.zeroPoint = currentPointOnSupportPlane;
                     }
 
@@ -197,6 +198,7 @@ export default class {
                     if (currentPointOnSupportPlane) {
                         diff = currentPointOnSupportPlane.subtract(this.supportPlane.zeroPoint);
                         this.currentControlMesh.position.y += diff.y;
+                        this.currentElement.mesh.setAbsolutePosition(this.currentControlMesh.position);
                         this.supportPlane.zeroPoint = currentPointOnSupportPlane;
                     }
 
@@ -206,6 +208,7 @@ export default class {
                     if (currentPointOnSupportPlane) {
                         diff = currentPointOnSupportPlane.subtract(this.supportPlane.zeroPoint);
                         this.currentControlMesh.position.z += diff.z;
+                        this.currentElement.mesh.setAbsolutePosition(this.currentControlMesh.position);
                         this.supportPlane.zeroPoint = currentPointOnSupportPlane;
                     }
 
@@ -214,44 +217,57 @@ export default class {
                     if (this.supportPlane.startPoint) {
                         currentPointOnSupportPlane = this.getPointOnSupportPlane();
 
-                        initAxis = {x: 'x', y: 'y'};
-                        rotationRadian = calcHelper.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
-                        startRadian = calcHelper.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
+                        if (currentPointOnSupportPlane){
+                            initAxis = {x: 'x', y: 'y'};
+                            rotationRadian = calcHelper.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
+                            startRadian = calcHelper.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
 
-                        this.currentElement.mesh.rotation.z = this.currentElement.mesh.rotation.z + (rotationRadian - startRadian);
-                        this.supportPlane.startPoint = currentPointOnSupportPlane;
+                            this.currentElement.mesh.rotation.z = this.currentElement.mesh.rotation.z + (rotationRadian - startRadian);
+                            this.supportPlane.startPoint = currentPointOnSupportPlane;
+                        }
                     }
                     break;
                 case 'arcXZ':
                     if (this.supportPlane.startPoint) {
                         currentPointOnSupportPlane = this.getPointOnSupportPlane();
 
-                        initAxis = {x: 'z', y: 'x'};
-                        rotationRadian = calcHelper.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
-                        startRadian = calcHelper.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
+                        if (currentPointOnSupportPlane){
+                            initAxis = {x: 'z', y: 'x'};
+                            rotationRadian = calcHelper.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
+                            startRadian = calcHelper.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
 
-                        this.currentElement.mesh.rotation.y = this.currentElement.mesh.rotation.y + (rotationRadian - startRadian);
-                        this.supportPlane.startPoint = currentPointOnSupportPlane;
+                            this.currentElement.mesh.rotation.y = this.currentElement.mesh.rotation.y + (rotationRadian - startRadian);
+                            this.supportPlane.startPoint = currentPointOnSupportPlane;
+                        }
                     }
                     break;
                 case 'arcZY':
                     if (this.supportPlane.startPoint) {
                         currentPointOnSupportPlane = this.getPointOnSupportPlane();
 
-                        initAxis = {x: 'y', y: 'z'};
-                        rotationRadian = calcHelper.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
-                        startRadian = calcHelper.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
+                        if (currentPointOnSupportPlane){
+                            initAxis = {x: 'y', y: 'z'};
+                            rotationRadian = calcHelper.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
+                            startRadian = calcHelper.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
 
-                        this.currentElement.mesh.rotation.x = this.currentElement.mesh.rotation.x + (rotationRadian - startRadian);
-                        this.supportPlane.startPoint = currentPointOnSupportPlane;
+                            this.currentElement.mesh.rotation.x = this.currentElement.mesh.rotation.x + (rotationRadian - startRadian);
+                            this.supportPlane.startPoint = currentPointOnSupportPlane;
+                        }
                     }
 
                     break;
                 case 'dragCursor':
                     pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
                         //Исключаем положение самой перетаскиваемой
-                        if (_.isEqual(mesh, this.currentElement.mesh)){
+                        if (_.eq(mesh, this.currentElement.mesh)){
                             return false;
+                        }
+
+                        //Не берем дочерные элементы
+                        if (mesh.element){
+                            if (mesh.element.isChildOf(this.currentElement)){
+                                return false;
+                            }
                         }
 
                         //Только обычные элементы
@@ -259,13 +275,15 @@ export default class {
                     }, false, camera);
 
                     if (pickInfo.hit) {
-                        //pickInfo.pickedPoint
-                        //pickInfo.getNormal
-                        //pickInfo.pickedMesh
 
-                        this.currentElement.mesh.position = pickInfo.pickedPoint;
+                        //Назначем родителем элемента - элемент под ним
+                        this.currentElement.setParent(pickInfo.pickedMesh.element);
+
+                        //Меняем положение фигуры и контрольного элемента
+                        this.currentElement.mesh.setAbsolutePosition(pickInfo.pickedPoint);
                         this.currentControlMesh.position = pickInfo.pickedPoint;
 
+                        //Меняем вращение фигуры в зависимости от нормали фигуры на которую навели
                         let axis1 = pickInfo.getNormal();
                         let axis2 = BABYLON.Vector3.Up();
                         let axis3 = BABYLON.Vector3.Up();
@@ -275,8 +293,8 @@ export default class {
                         BABYLON.Vector3.CrossToRef(axis2, axis1, axis3);
                         this.currentElement.mesh.rotation = BABYLON.Vector3.RotationFromAxis(axis3.negate(), axis1, axis2);
 
+                        //TODO SubRotation
                         //mesh.subRotationQuaternion = options.pickedMeshRotationQuaternion;
-                        //
                         //this.mergeRotations(mesh);
                     }
                     break;
@@ -564,7 +582,7 @@ export default class {
             new BABYLON.Vector3.Zero(),
             new BABYLON.Vector3(size, 0, 0)
         ], scene);
-        axisX.position = mesh.position;
+        axisX.position = mesh.absolutePosition;
         axisX.color = new BABYLON.Color3(1, 0, 0);
 
         // Y AXIS
@@ -572,14 +590,14 @@ export default class {
             new BABYLON.Vector3.Zero(),
             new BABYLON.Vector3(0, size, 0)
         ], scene);
-        axisY.position = mesh.position;
+        axisY.position = mesh.absolutePosition;
         axisY.color = new BABYLON.Color3(0, 1, 0);
 
         // Z AXIS
         let axisZ = BABYLON.Mesh.CreateLines("axisZ", [
             new BABYLON.Vector3.Zero(),
             new BABYLON.Vector3(0, 0, size)], scene);
-        axisZ.position = mesh.position;
+        axisZ.position = mesh.absolutePosition;
         axisZ.color = new BABYLON.Color3(0, 0, 1);
 
         this.controlMeshes.push(axisX, axisY, axisZ)
@@ -593,30 +611,27 @@ export default class {
         let mesh = this.currentElement.mesh;
         let scene = this.Map.scene;
 
-        let size = BABYLON.Vector3.Distance(this.Map.playerCamera.position, mesh.position) / 7;
+        let size = BABYLON.Vector3.Distance(this.Map.playerCamera.position, mesh.absolutePosition) / 7;
 
         this.showControlAxises(size);
 
         let xBox = BABYLON.Mesh.CreateBox("editX", size / 10, scene);
         xBox.setPivotMatrix(BABYLON.Matrix.Translation(size, 0, 0));
-        xBox.parentMesh = mesh;
-        xBox.position = mesh.position;
+        xBox.position = mesh.absolutePosition;
         let xBoxMaterial = new BABYLON.StandardMaterial("boxMaterial", scene);
         xBoxMaterial.diffuseColor = BABYLON.Color3.Red();
         xBox.material = xBoxMaterial;
 
         let yBox = BABYLON.Mesh.CreateBox("editY", size / 10, scene);
         yBox.setPivotMatrix(BABYLON.Matrix.Translation(0, size, 0));
-        yBox.parentMesh = mesh;
-        yBox.position = mesh.position;
+        yBox.position = mesh.absolutePosition;
         let yBoxMaterial = new BABYLON.StandardMaterial("boxMaterial", scene);
         yBoxMaterial.diffuseColor = BABYLON.Color3.Green();
         yBox.material = yBoxMaterial;
 
         let zBox = BABYLON.Mesh.CreateBox("editZ", size / 10, scene);
         zBox.setPivotMatrix(BABYLON.Matrix.Translation(0, 0, size));
-        zBox.parentMesh = mesh;
-        zBox.position = mesh.position;
+        zBox.position = mesh.absolutePosition;
         let zBoxMaterial = new BABYLON.StandardMaterial("boxMaterial", scene);
         zBoxMaterial.diffuseColor = BABYLON.Color3.Blue();
         zBox.material = zBoxMaterial;
@@ -636,7 +651,7 @@ export default class {
         let mesh = this.currentElement.mesh;
         let scene = this.Map.scene;
 
-        let size = BABYLON.Vector3.Distance(this.Map.playerCamera.position, mesh.position) / 10;
+        let size = BABYLON.Vector3.Distance(this.Map.playerCamera.position, mesh.absolutePosition) / 10;
 
         this.showControlAxises(size);
 
@@ -673,20 +688,20 @@ export default class {
         };
 
         var arcXY = BABYLON.Mesh.CreateTube("arcXY", curveXY, 2, 60, radiusFunction, 2, scene, false, BABYLON.Mesh.FRONTSIDE);
-        arcXY.position = mesh.position;
+        arcXY.position = mesh.absolutePosition;
         arcXY.material = new BABYLON.StandardMaterial('boxMaterial', scene);
         arcXY.material.diffuseColor = new BABYLON.Color3(1, 1, 0);
         arcXY.radius = radiusFunction();
 
 
         var arcXZ = BABYLON.Mesh.CreateTube("arcXZ", curveXZ, 2, 60, radiusFunction, 2, scene, false, BABYLON.Mesh.FRONTSIDE);
-        arcXZ.position = mesh.position;
+        arcXZ.position = mesh.absolutePosition;
         arcXZ.material = new BABYLON.StandardMaterial('boxMaterial', scene);
         arcXZ.material.diffuseColor = new BABYLON.Color3(1, 0, 1);
         arcXZ.radius = radiusFunction();
 
         var arcZY = BABYLON.Mesh.CreateTube("arcZY", curveZY, 2, 60, radiusFunction, 2, scene, false, BABYLON.Mesh.FRONTSIDE);
-        arcZY.position = mesh.position;
+        arcZY.position = mesh.absolutePosition;
         arcZY.material = new BABYLON.StandardMaterial('boxMaterial', scene);
         arcZY.material.diffuseColor = new BABYLON.Color3(0, 1, 1);
         arcZY.radius = radiusFunction();
@@ -709,8 +724,7 @@ export default class {
         let size = BABYLON.Vector3.Distance(this.Map.playerCamera.position, mesh.position) / 7;
 
         let dragCursor = BABYLON.Mesh.CreateSphere("dragCursor", 5, size / 5, scene);
-        dragCursor.parentMesh = mesh;
-        dragCursor.position = mesh.position;
+        dragCursor.position = mesh.absolutePosition;
         let dragCursorMaterial = new BABYLON.StandardMaterial("dragCursorMaterial", scene);
         dragCursorMaterial.diffuseColor = BABYLON.Color3.Red();
         dragCursorMaterial.alpha = 0.6;

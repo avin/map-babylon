@@ -109,6 +109,40 @@ export default class {
         }
     }
 
+    /**
+     * Назначить родительский элемент
+     * @param parentElement
+     */
+    setParent(parentElement){
+        //Только если не пытаемся привязать старого родителя
+        if (! _.eq(this.parent, parentElement)){
+
+            //Отвязываем родителя если пытаемся привязаться к "специальному" элементу
+            if (parentElement.type.kind == 'special') {
+                this.parent = null;
+                this.mesh.parent = null;
+                return;
+            }
+
+            this.parent = parentElement;
+            this.mesh.parent = parentElement.mesh;
+        }
+    }
+
+    /**
+     * Проверка на родство во всём гендерном дереве
+     * @param parentElement
+     */
+    isChildOf(parentElement){
+        if (this.parent){
+            if (_.eq(this.parent, parentElement)){
+                return true;
+            } else {
+                return this.parent.isChildOf(parentElement);
+            }
+        }
+    }
+
     update(delta, time){
         if (this.core){
             if (_.isFunction(this.core.update)){
