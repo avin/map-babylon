@@ -33,6 +33,7 @@ export default class {
             MOVE: 1,
             ROTATE: 2,
             DRAG: 3,
+            APPEND: 4,
         };
 
         //Режим редактирования элемента
@@ -604,7 +605,7 @@ export default class {
         let mesh = this.currentElement.mesh;
         let scene = this.Map.scene;
 
-        let size = BABYLON.Vector3.Distance(this.Map.playerCamera.position, mesh.absolutePosition) / 7;
+        let size = 2;
 
         this.showControlAxises(size);
 
@@ -644,7 +645,7 @@ export default class {
         let mesh = this.currentElement.mesh;
         let scene = this.Map.scene;
 
-        let size = BABYLON.Vector3.Distance(this.Map.playerCamera.position, mesh.absolutePosition) / 10;
+        let size = 2;
 
         this.showControlAxises(size);
 
@@ -677,7 +678,7 @@ export default class {
         let curveZY = curvePointsZY(1, 100);
 
         let radiusFunction = () => {
-            return size / 10;
+            return size / 15;
         };
 
         var arcXY = BABYLON.Mesh.CreateTube("arcXY", curveXY, 2, 60, radiusFunction, 2, scene, false, BABYLON.Mesh.FRONTSIDE);
@@ -714,7 +715,7 @@ export default class {
         let mesh = this.currentElement.mesh;
         let scene = this.Map.scene;
 
-        let size = BABYLON.Vector3.Distance(this.Map.playerCamera.position, mesh.position) / 7;
+        let size = 2;
 
         let dragCursor = BABYLON.Mesh.CreateSphere("dragCursor", 5, size / 5, scene);
         dragCursor.position = mesh.absolutePosition;
@@ -739,6 +740,11 @@ export default class {
     }
 
     update() {
+        //Меняем размер фигур управления в зависимости от удаленности камеры
+        _.each(this.controlMeshes, (mesh) => {
+            let scale = BABYLON.Vector3.Distance(this.Map.playerCamera.position, this.currentElement.mesh.position) / 10;
+            mesh.scaling = new BABYLON.Vector3(scale, scale, scale);
+        })
 
     }
 
