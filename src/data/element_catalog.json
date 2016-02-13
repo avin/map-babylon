@@ -1,0 +1,79 @@
+[
+    {
+        "_id": 1,
+        "type_id": 1,
+        "name": "Земля"
+    },
+    {
+        "_id": 2,
+        "type_id": 2,
+        "name": "Небо"
+    },
+    {
+        "_id": 3,
+        "type_id": 3,
+        "properties": [],
+        "parent": 1,
+        "location": {
+            "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+            },
+            "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+            }
+        },
+        "custom_model": false,
+        "history": [],
+        "states": []
+    },
+    {
+        "_id": 4,
+        "type_id": 3,
+        "properties": [],
+        "parent": 1,
+        "location": {
+            "position": {
+                "x": 3,
+                "y": 0,
+                "z": 0
+            },
+            "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+            }
+        },
+        "custom_model": false,
+        "history": [],
+        "states": []
+    },
+    {
+        "_id": 5,
+        "type_id": 3,
+        "properties": [],
+        "parent": 1,
+        "location": {
+            "position": {
+                "x": 6,
+                "y": 0,
+                "z": 0
+            },
+            "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+            }
+        },
+        "custom_model": false,
+        "history": [],
+        "states": []
+    }
+
+]
+
+
+

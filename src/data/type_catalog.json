@@ -1,0 +1,159 @@
+[
+    {
+        "_id": 1,
+        "name": "Земля",
+        "code_class": "ground",
+        "kind": "special",
+        "properties": [],
+        "parent_id": 0,
+        "create_enable": false,
+        "rules": []
+    },
+    {
+        "_id": 2,
+        "name": "Небо",
+        "code_class": "sky",
+        "kind": "special",
+        "properties": [],
+        "parent_id": 0,
+        "create_enable": false,
+        "rules": []
+    },
+    {
+        "_id": 3,
+        "name": "Строение",
+        "code_class": "building",
+        "kind": "figure",
+        "properties": [],
+        "parent_id": 0,
+        "create_enable": true,
+        "default_model": "building",
+        "rules": {
+            "place": [
+                1
+            ]
+        }
+    },
+    {
+        "_id": 4,
+        "name": "Опора",
+        "code_class": "pillar",
+        "kind": "figure",
+        "properties": [],
+        "parent_id": 0,
+        "create_enable": true,
+        "default_model": "pillar",
+        "rules": {
+            "place": [
+                1
+            ]
+        }
+    },
+    {
+        "_id": 4001,
+        "name": "Опора классическая",
+        "code_class": "pillar",
+        "kind": "figure",
+        "properties": [],
+        "parent_id": 4,
+        "create_enable": true,
+        "default_model": "pillar",
+        "rules": {
+            "place": [
+                1
+            ]
+        }
+    },
+    {
+        "_id": 4011,
+        "name": "Опора суб-классическая 1",
+        "code_class": "pillar",
+        "kind": "figure",
+        "properties": [],
+        "parent_id": 4001,
+        "create_enable": true,
+        "default_model": "pillar",
+        "rules": {
+            "place": [
+                1
+            ]
+        }
+    },
+    {
+        "_id": 4012,
+        "name": "Опора суб-классическая 2",
+        "code_class": "pillar",
+        "kind": "figure",
+        "properties": [],
+        "parent_id": 4001,
+        "create_enable": true,
+        "default_model": "pillar",
+        "rules": {
+            "place": [
+                1
+            ]
+        }
+    },
+    {
+        "_id": 5,
+        "name": "Крепление",
+        "code_class": "mount",
+        "kind": "figure",
+        "properties": [],
+        "parent_id": 0,
+        "create_enable": true,
+        "default_model": "mount",
+        "rules": {
+            "place": [
+                3,
+                4
+            ]
+        }
+    },
+    {
+        "_id": 6,
+        "name": "Кабельный канал",
+        "code_class": "cable_сhannel",
+        "kind": "line",
+        "properties": [],
+        "parent_id": 0,
+        "create_enable": true,
+        "rules": {
+            "mount_last": [
+                4
+            ],
+            "mount_intermediate": [
+                3,
+                5
+            ],
+            "passage": []
+        }
+    },
+    {
+        "_id": 7,
+        "name": "Столб с опорами",
+        "kind": "group",
+        "parent_id": 0,
+        "create_enable": true,
+        "parts": {
+            "main_kind": 4,
+            "subsidiaries": [
+                {
+                    "kind_id": 4,
+                    "layout": {
+                        "position": {
+                            "x": 0,
+                            "y": 0,
+                            "z": 0
+                        },
+                        "rotation": {
+                            "x": 0,
+                            "y": 0,
+                            "z": 0
+                        }
+                    }
+                }
+            ]
+        }
+    }
+]
