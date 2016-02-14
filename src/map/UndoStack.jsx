@@ -34,6 +34,13 @@ export default class {
     _doUndo(undo){
         switch(undo.actionType){
             case 'edit':{
+                undo.element.parent = undo.before.parent;
+                if (undo.element.parent){
+                    undo.element.mesh.parent = undo.element.parent.mesh;
+                } else {
+                    undo.element.mesh.parent = null;
+                }
+
                 undo.element.mesh.position = undo.before.position.clone();
                 undo.element.mesh.rotation = undo.before.rotation.clone();
                 undo.element.mesh.scaling = undo.before.scaling.clone();
@@ -61,13 +68,13 @@ export default class {
             return false;
         }
 
-        if (this.stack[this.current + 1]){
-            this.current++;
-        }
-
         let redo = this.stack[this.current];
         if (redo){
             this._doRedo(redo);
+        }
+
+        if (this.stack[this.current + 1]){
+            this.current++;
         }
     }
 
@@ -79,6 +86,14 @@ export default class {
     _doRedo(redo){
         switch(redo.actionType){
             case 'edit':{
+                redo.element.parent = redo.after.parent;
+                if (redo.element.parent){
+                    redo.element.mesh.parent = redo.element.parent.mesh;
+                } else {
+                    redo.element.mesh.parent = null;
+                }
+
+
                 redo.element.mesh.position = redo.after.position.clone();
                 redo.element.mesh.rotation = redo.after.rotation.clone();
                 redo.element.mesh.scaling = redo.after.scaling.clone();
@@ -129,6 +144,7 @@ export default class {
             position: undoStackItem.element.mesh.position.clone(),
             rotation: undoStackItem.element.mesh.rotation.clone(),
             scaling: undoStackItem.element.mesh.scaling.clone(),
+            parent: undoStackItem.element.parent
         };
 
         //Если действие правки

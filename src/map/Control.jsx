@@ -396,6 +396,7 @@ export default class {
     }
 
     onMiddlePointerUp(event) {
+        //Восстанавливаем состояние
         this.Map.undoStack.undo();
     }
 
