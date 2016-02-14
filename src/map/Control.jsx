@@ -57,6 +57,9 @@ export default class {
         //Массив фигур управления
         this.controlMeshes = [];
 
+        //ID undo-действия в стеке отмены действий
+        this.undoItemId = null;
+
         this._init();
     }
 
@@ -133,7 +136,9 @@ export default class {
         this.Map.canvas.addEventListener("pointermove", this.onPointerMove.bind(this), false);
 
         //Отключаем стандартное контексное меню
-        this.Map.canvas.addEventListener("contextmenu", (event) => {event.preventDefault()}, false);
+        this.Map.canvas.addEventListener("contextmenu", (event) => {
+            event.preventDefault()
+        }, false);
 
         this.Map.scene.onDispose = () => {
             this.Map.canvas.removeEventListener("pointerdown", this.onPointerDown);
@@ -218,7 +223,7 @@ export default class {
                     if (this.supportPlane.startPoint) {
                         currentPointOnSupportPlane = this.getPointOnSupportPlane();
 
-                        if (currentPointOnSupportPlane){
+                        if (currentPointOnSupportPlane) {
                             initAxis = {x: 'x', y: 'y'};
                             rotationRadian = calcHelper.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
                             startRadian = calcHelper.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
@@ -232,7 +237,7 @@ export default class {
                     if (this.supportPlane.startPoint) {
                         currentPointOnSupportPlane = this.getPointOnSupportPlane();
 
-                        if (currentPointOnSupportPlane){
+                        if (currentPointOnSupportPlane) {
                             initAxis = {x: 'z', y: 'x'};
                             rotationRadian = calcHelper.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
                             startRadian = calcHelper.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
@@ -246,7 +251,7 @@ export default class {
                     if (this.supportPlane.startPoint) {
                         currentPointOnSupportPlane = this.getPointOnSupportPlane();
 
-                        if (currentPointOnSupportPlane){
+                        if (currentPointOnSupportPlane) {
                             initAxis = {x: 'y', y: 'z'};
                             rotationRadian = calcHelper.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
                             startRadian = calcHelper.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
@@ -260,13 +265,13 @@ export default class {
                 case 'dragCursor':
                     pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
                         //Исключаем положение самой перетаскиваемой
-                        if (_.eq(mesh, this.currentElement.mesh)){
+                        if (_.eq(mesh, this.currentElement.mesh)) {
                             return false;
                         }
 
                         //Не берем дочерные элементы
-                        if (mesh.element){
-                            if (mesh.element.isChildOf(this.currentElement)){
+                        if (mesh.element) {
+                            if (mesh.element.isChildOf(this.currentElement)) {
                                 return false;
                             }
                         }
@@ -340,6 +345,11 @@ export default class {
         } else {
             this.unsetCurrentControlMesh();
         }
+
+        if (this.currentElement) {
+            //Сохраняем состояние элемента до действия
+            this.undoItemId = this.Map.undoStack.initUndoItem(this.currentElement);
+        }
     }
 
     onLeftPointerUp(event) {
@@ -369,27 +379,33 @@ export default class {
         //Убираем вспомогательную плоскость
         this.destroySupportPlane();
 
-        this.startingSupportPlanePoint = null;
-
         this.unsetCurrentControlMesh();
+
+        //Сохраняем состояние элемента после действия
+        if (this.currentElement) {
+            //Сохраняем состояние элемента после действия
+            if (this.undoItemId !== null) {
+                this.undoItemId = this.Map.undoStack.fillUndoItem(this.undoItemId, 'edit');
+                this.undoItemId = null;
+            }
+        }
     }
 
     onMiddlePointerDown(event) {
-        console.log('onMiddlePointerDown')
+        //
     }
 
     onMiddlePointerUp(event) {
-        console.log('onMiddlePointerUp')
+        this.Map.undoStack.undo();
     }
 
 
     onRightPointerDown(event) {
-        console.log('onRightPointerDown')
+        //
     }
 
     onRightPointerUp(event) {
-        event.preventDefault();
-        console.log('onRightPointerUp')
+        this.Map.undoStack.redo();
     }
 
     /**
@@ -457,7 +473,7 @@ export default class {
 
         //Привязываем позицию к позиции контрольной фигуры
         this.supportPlane.position = parentMesh.absolutePosition;
-        if (rotation){
+        if (rotation) {
             this.supportPlane.rotation = rotation;
         }
 
@@ -711,7 +727,7 @@ export default class {
     /**
      * Отобразить точку для drag'n'drop элемента
      */
-    showDragCursor(){
+    showDragCursor() {
         let mesh = this.currentElement.mesh;
         let scene = this.Map.scene;
 

@@ -12,6 +12,7 @@ export default class {
         this.mesh = null; //Фигура элемента
         this.core = null; //Объект описывающий логику элемента
 
+        this.history = [];
 
         this._init();
     }
@@ -141,6 +142,13 @@ export default class {
                 return this.parent.isChildOf(parentElement);
             }
         }
+    }
+
+    /**
+     * Удалить элемент
+     */
+    remove(){
+        //TODO
     }
 
     update(delta, time){

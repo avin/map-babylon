@@ -6,6 +6,7 @@ import mainLight from './scene/mainLight';
 import cameraLight from './scene/cameraLight';
 import filter from './scene/filter';
 import Control from './Control';
+import UndoStack from './UndoStack';
 
 
 import Element from './models/Element'
@@ -33,8 +34,10 @@ export default class {
         this.typeCatalog = _.keyBy(typeCatalog, '_id');
         this.elementCatalog = _.keyBy(elementCatalog, '_id');
 
-        this.elements = {};
+        this.elements = [];
 
+        //Определения стека отмены действий
+        this.undoStack = new UndoStack(this);
 
         this.time = 0.0;
 
@@ -127,8 +130,8 @@ export default class {
     _initContent() {
 
         //Расставляем все элементы из базы элементов
-        _.each(this.elementCatalog, (elementData, _id) => {
-            this.elements[_id] = new Element(this, elementData);
+        _.each(this.elementCatalog, (elementData) => {
+            this.elements.push(new Element(this, elementData));
         });
 
         this.scene.beforeRender = () => {
