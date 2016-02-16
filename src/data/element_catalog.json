@@ -16,9 +16,9 @@
         "parent": 1,
         "location": {
             "position": {
-                "x": 0,
+                "x": 6,
                 "y": 0,
-                "z": 0
+                "z": 6
             },
             "rotation": {
                 "x": 0,

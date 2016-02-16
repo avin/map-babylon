@@ -5,4 +5,5 @@ export default Reflux.createActions([
     "toggleVisible",
     "toggleShowChildren",
     "search",
+    "appendElement",
 ]);

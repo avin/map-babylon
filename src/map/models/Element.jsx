@@ -40,7 +40,7 @@ export default class {
                 } else {
                     //Иначе используем модель типа
                     if (this.type.default_model){
-                        //Только если модель для данного типа назначена
+                        //Только если модель для данного типа загружена
                         let elementMesh = this.Map.models[this.type.default_model].createInstance(this._id);
                         elementMesh.scaling = new BABYLON.Vector3(1, 1, 1);
 
@@ -94,6 +94,9 @@ export default class {
         }
     }
 
+    /**
+     * Показать фигуру элемента на карте
+     */
     show(){
         if (this.mesh.sourceMesh){
             this.mesh.sourceMesh.visibility = 1;
@@ -102,6 +105,9 @@ export default class {
         }
     }
 
+    /**
+     * Спрятать фигуру элемента на карте
+     */
     hide(){
         if (this.mesh.sourceMesh){
             this.mesh.sourceMesh.visibility = 0;
@@ -148,10 +154,32 @@ export default class {
      * Удалить элемент
      */
     remove(){
-        //TODO
+
+        //Удаляем саму фигуру элемента
+        this.mesh.dispose();
+
+        //Убиваем всех потомков элемента
+        _.each(this.Map.elements, (element) => {
+            if (element){
+                if (element.isChildOf(this)) {
+                    element.remove();
+                }
+            }
+        });
+
+        //Убиваем элемент из общей базы элементов
+        _.remove(this.Map.elements, (element) => {
+            return element === this;
+        });
     }
 
+    /**
+     * Покадровое обновление элемента
+     * @param delta
+     * @param time
+     */
     update(delta, time){
+        //Если у элемента есть объект поведения
         if (this.core){
             if (_.isFunction(this.core.update)){
                 this.core.update(delta, time);

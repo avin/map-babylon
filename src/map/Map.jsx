@@ -142,6 +142,12 @@ export default class {
         };
     }
 
+    /**
+     * Функция отвечающая за инициализацию покадровых действий
+     * @param delta
+     * @param time
+     * @private
+     */
     _update(delta, time) {
 
         _.each(this.elements, (element) => {
@@ -157,6 +163,10 @@ export default class {
         //this.playerCamera.setTarget(new BABYLON.Vector3(0,0,0));
     }
 
+    /**
+     * Показать элементы определенного типа на карте (используется для фильтров)
+     * @param typeId
+     */
     showElementsByTypeId(typeId) {
         let typedElements = _.filter(this.elements, {type: {_id: typeId}});
         _.each(typedElements, (element) => {
@@ -164,6 +174,10 @@ export default class {
         });
     }
 
+    /**
+     * Скрыть элементы определенного типа на карте (используется для фильтров)
+     * @param typeId
+     */
     hideElementsByTypeId(typeId) {
         let typedElements = _.filter(this.elements, {type: {_id: typeId}});
         _.each(typedElements, (element) => {
@@ -185,6 +199,10 @@ export default class {
         this.control.disableCameraControl();
     }
 
+    /**
+     * Выставить режим отображения фигур
+     * @param mode
+     */
     setViewMode(mode) {
         switch (mode) {
             case 1: //Тела
@@ -234,7 +252,52 @@ export default class {
         }
     }
 
+    /**
+     * Выставить режим редактирования
+     * @param mode
+     */
     setControlMode(mode) {
         this.control.setMode(mode)
+    }
+
+    /**
+     * Добавить элемент на карту
+     * @param elementType
+     */
+    appendElement(elementType){
+        console.log('appending', elementType);
+
+        //Если мы уже в режиме добавления
+        if (this.control.mode === 4){
+            //Убираем текущий элемент для дополнения
+            this.appendingElement.remove();
+        }
+
+        this.setControlMode(4); //APPEND
+
+        let newElementData = {
+            "_id": 4,
+            "type_id": elementType._id,
+            "properties": [],
+            "parent": 1,
+            "location": {
+                "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                }
+            },
+            "custom_model": false,
+            "history": [],
+            "states": []
+        };
+
+
+        this.appendingElement = new Element(this, newElementData);
     }
 }

@@ -40,6 +40,10 @@ export default Reflux.createStore({
         this.trigger(this.data);
     },
 
+    onAppendElement(type){
+        window.app.map.appendElement(type);
+    },
+
     /**
      * Показать/Спрятать каталог
      */

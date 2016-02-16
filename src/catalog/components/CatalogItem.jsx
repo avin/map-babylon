@@ -16,11 +16,14 @@ export default React.createClass({
         var regex = new RegExp("(" + query + ")", "gi");
         return "<span>"+name.replace(regex, "<strong>$1</strong>")+"</span>";
     },
+    handleAppendElement(){
+        catalogActions.appendElement(this.props.item)
+    },
     render(){
         let addButton;
         if (this.props.item.create_enable) {
             addButton = (
-                <button className="btn btn-xs btn-default">
+                <button className="btn btn-xs btn-default" onClick={this.handleAppendElement}>
                     <i className="fa fa-plus"/>
                 </button>
             )

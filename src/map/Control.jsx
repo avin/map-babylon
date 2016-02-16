@@ -8,6 +8,7 @@ export default class {
         this.playerCamera = Map.playerCamera;
         this.miniCamera = Map.miniCamera;
 
+        //Определяем алиасы на коды клавиш
         this.keyCodes = {
             left: 65, //A
             right: 68, //D
@@ -16,8 +17,10 @@ export default class {
             up: 81, //Q
             down: 90, //Z
             shift: 16, //shift
+            delete: 46, //delete
         };
 
+        //Инициализируем состояния нажатых клавиш
         this.keyStates = {
             left: 0,
             right: 0,
@@ -26,6 +29,7 @@ export default class {
             up: 0,
             down: 0,
             shift: 0,
+            delete: 0,
         };
 
         //Возможные режимы редактирования элемента
@@ -64,6 +68,7 @@ export default class {
     }
 
     _init() {
+        //Вешаем стандартный обработчик событий бабилона на сцену
         this.Map.scene.actionManager = new BABYLON.ActionManager(this.Map.scene);
 
         //Назначем состояние клавиш при нажатии
@@ -84,12 +89,13 @@ export default class {
             });
         }));
 
-        //Переопредщеляем клавиши управления камерой
+        //Переопределяем клавиши управления камерой
         this.playerCamera.keysDown = [this.keyCodes.back];
         this.playerCamera.keysUp = [this.keyCodes.forward];
         this.playerCamera.keysLeft = [this.keyCodes.left];
         this.playerCamera.keysRight = [this.keyCodes.right];
 
+        //Дейсвтие до рендера кадра
         this.Map.scene.registerBeforeRender(() => {
 
             //Привязываем положение миникарты к основной камере
@@ -99,6 +105,10 @@ export default class {
                 this.miniCamera.orthoTop = this.playerCamera.position.z + 500 / 2 * (this.miniCamera.x);
                 this.miniCamera.orthoBottom = this.playerCamera.position.z - 500 / 2 * (this.miniCamera.x);
             }
+
+            /**
+             * Управление высотой камеры
+             */
 
             let cameraPositionY = this.playerCamera.position.y;
 
@@ -114,13 +124,22 @@ export default class {
                 if (this.keyStates.down == 1) {
                     cameraPositionY -= this.playerCamera.speed / 20 * this.playerCamera.accelerator;
                 }
-
             }
 
             //Отрицательной высота не может быть - всегда метр над землей
-            cameraPositionY = (cameraPositionY < 1) ? 1 : cameraPositionY;
+            this.playerCamera.position.y = (cameraPositionY < 1) ? 1 : cameraPositionY;
 
-            this.playerCamera.position.y = cameraPositionY;
+            /**
+             * Прочие обработчики нажатия клавиш
+             */
+
+            //Только если камера в режиме управления
+            if (this.Map.scene.activeCamera._attachedElement) {
+                //Удаляем элемент
+                if (this.keyStates.delete == 1) {
+                    this.deleteElement();
+                }
+            }
         });
 
         this._enableClickInteractionControl()
@@ -131,15 +150,19 @@ export default class {
      * @private
      */
     _enableClickInteractionControl() {
-        this.Map.canvas.addEventListener("pointerdown", this.onPointerDown.bind(this), false);
-        this.Map.canvas.addEventListener("pointerup", this.onPointerUp.bind(this), false);
-        this.Map.canvas.addEventListener("pointermove", this.onPointerMove.bind(this), false);
 
         //Отключаем стандартное контексное меню
         this.Map.canvas.addEventListener("contextmenu", (event) => {
             event.preventDefault()
         }, false);
 
+
+        //Обработчики событий мыши
+        this.Map.canvas.addEventListener("pointerdown", this.onPointerDown.bind(this), false);
+        this.Map.canvas.addEventListener("pointerup", this.onPointerUp.bind(this), false);
+        this.Map.canvas.addEventListener("pointermove", this.onPointerMove.bind(this), false);
+
+        //Снимаем обработчики при удалении сцены
         this.Map.scene.onDispose = () => {
             this.Map.canvas.removeEventListener("pointerdown", this.onPointerDown);
             this.Map.canvas.removeEventListener("pointerup", this.onPointerUp);
@@ -147,6 +170,10 @@ export default class {
         }
     }
 
+    /**
+     * Координатор обработчика событый: Любое кнопка мыши нажата
+     * @param event
+     */
     onPointerDown(event) {
         switch (event.button) {
             case 0:
@@ -161,6 +188,10 @@ export default class {
         }
     }
 
+    /**
+     * Координатор обработчика событый: Любое кнопка мыши отжата
+     * @param event
+     */
     onPointerUp(event) {
         switch (event.button) {
             case 0:
@@ -175,86 +206,89 @@ export default class {
         }
     }
 
+    /**
+     * Обработчик событый: Курсор мыши двигается
+     * @param event
+     */
     onPointerMove(event) {
         let scene = this.Map.scene;
         let camera = this.Map.playerCamera;
-        let currentPointOnSupportPlane;
-        let diff;
-        let rotationRadian;
-        let startRadian;
-        let initAxis;
-        let pickInfo;
 
         //Если выбрана фигура управления
         if (this.currentControlMesh) {
 
             switch (this.currentControlMesh.name) {
-                case 'editX':
-                    currentPointOnSupportPlane = this.getPointOnSupportPlane();
+                case 'editX': {
+                    let currentPointOnSupportPlane = this.getPointOnSupportPlane();
                     if (currentPointOnSupportPlane) {
-                        diff = currentPointOnSupportPlane.subtract(this.supportPlane.zeroPoint);
+                        let diff = currentPointOnSupportPlane.subtract(this.supportPlane.zeroPoint);
                         this.currentControlMesh.position.x += diff.x;
                         this.currentElement.mesh.setAbsolutePosition(this.currentControlMesh.position);
                         this.supportPlane.zeroPoint = currentPointOnSupportPlane;
                     }
 
                     break;
-                case 'editY':
-                    currentPointOnSupportPlane = this.getPointOnSupportPlane();
+                }
+                case 'editY': {
+                    let currentPointOnSupportPlane = this.getPointOnSupportPlane();
                     if (currentPointOnSupportPlane) {
-                        diff = currentPointOnSupportPlane.subtract(this.supportPlane.zeroPoint);
+                        let diff = currentPointOnSupportPlane.subtract(this.supportPlane.zeroPoint);
                         this.currentControlMesh.position.y += diff.y;
                         this.currentElement.mesh.setAbsolutePosition(this.currentControlMesh.position);
                         this.supportPlane.zeroPoint = currentPointOnSupportPlane;
                     }
 
                     break;
-                case 'editZ':
-                    currentPointOnSupportPlane = this.getPointOnSupportPlane();
+                }
+                case 'editZ': {
+                    let currentPointOnSupportPlane = this.getPointOnSupportPlane();
                     if (currentPointOnSupportPlane) {
-                        diff = currentPointOnSupportPlane.subtract(this.supportPlane.zeroPoint);
+                        let diff = currentPointOnSupportPlane.subtract(this.supportPlane.zeroPoint);
                         this.currentControlMesh.position.z += diff.z;
                         this.currentElement.mesh.setAbsolutePosition(this.currentControlMesh.position);
                         this.supportPlane.zeroPoint = currentPointOnSupportPlane;
                     }
 
                     break;
-                case 'arcXY':
+                }
+                case 'arcXY': {
                     if (this.supportPlane.startPoint) {
-                        currentPointOnSupportPlane = this.getPointOnSupportPlane();
+                        let currentPointOnSupportPlane = this.getPointOnSupportPlane();
 
                         if (currentPointOnSupportPlane) {
-                            initAxis = {x: 'x', y: 'y'};
-                            rotationRadian = calcHelper.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
-                            startRadian = calcHelper.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
+                            let initAxis = {x: 'x', y: 'y'};
+                            let rotationRadian = calcHelper.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
+                            let startRadian = calcHelper.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
 
                             this.currentElement.mesh.rotation.z = this.currentElement.mesh.rotation.z + (rotationRadian - startRadian);
                             this.supportPlane.startPoint = currentPointOnSupportPlane;
                         }
                     }
                     break;
-                case 'arcXZ':
+                }
+                case 'arcXZ': {
                     if (this.supportPlane.startPoint) {
-                        currentPointOnSupportPlane = this.getPointOnSupportPlane();
+                        let currentPointOnSupportPlane = this.getPointOnSupportPlane();
 
                         if (currentPointOnSupportPlane) {
-                            initAxis = {x: 'z', y: 'x'};
-                            rotationRadian = calcHelper.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
-                            startRadian = calcHelper.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
+                            let initAxis = {x: 'z', y: 'x'};
+                            let rotationRadian = calcHelper.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
+                            let startRadian = calcHelper.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
 
                             this.currentElement.mesh.rotation.y = this.currentElement.mesh.rotation.y + (rotationRadian - startRadian);
                             this.supportPlane.startPoint = currentPointOnSupportPlane;
                         }
                     }
                     break;
-                case 'arcZY':
+                }
+                case 'arcZY': {
                     if (this.supportPlane.startPoint) {
-                        currentPointOnSupportPlane = this.getPointOnSupportPlane();
+                        let currentPointOnSupportPlane = this.getPointOnSupportPlane();
 
                         if (currentPointOnSupportPlane) {
-                            initAxis = {x: 'y', y: 'z'};
-                            rotationRadian = calcHelper.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
-                            startRadian = calcHelper.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
+                            let initAxis = {x: 'y', y: 'z'};
+                            let rotationRadian = calcHelper.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
+                            let startRadian = calcHelper.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
 
                             this.currentElement.mesh.rotation.x = this.currentElement.mesh.rotation.x + (rotationRadian - startRadian);
                             this.supportPlane.startPoint = currentPointOnSupportPlane;
@@ -262,8 +296,10 @@ export default class {
                     }
 
                     break;
-                case 'dragCursor':
-                    pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
+                }
+
+                case 'dragCursor':{
+                    let pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
                         //Исключаем положение самой перетаскиваемой
                         if (_.eq(mesh, this.currentElement.mesh)) {
                             return false;
@@ -293,19 +329,80 @@ export default class {
                         let axis1 = pickInfo.getNormal();
                         let axis2 = BABYLON.Vector3.Up();
                         let axis3 = BABYLON.Vector3.Up();
-                        var start = new BABYLON.Vector3(Math.PI / 2, Math.PI / 2, 0);
+                        let start = new BABYLON.Vector3(Math.PI / 2, Math.PI / 2, 0);
 
                         BABYLON.Vector3.CrossToRef(start, axis1, axis2);
                         BABYLON.Vector3.CrossToRef(axis2, axis1, axis3);
                         this.currentElement.mesh.rotation = BABYLON.Vector3.RotationFromAxis(axis3.negate(), axis1, axis2);
                     }
                     break;
+                }
+            }
+        }
+
+        //Если выбран режим APPEND
+        if (this.mode === 4) {
+            //И выбрана фигура для дополнения
+            if (this.Map.appendingElement) {
+
+                /**
+                 * Перемещаем фигуру за курсором
+                 */
+
+                let pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
+                    //Исключаем положение самой перетаскиваемой
+                    if (_.eq(mesh, this.Map.appendingElement.mesh)) {
+                        return false;
+                    }
+
+                    //Только обычные элементы
+                    return _.includes(this.Map.elements, mesh.element);
+                }, false, camera);
+
+                if (pickInfo.hit) {
+
+                    //Назначем родителем элемента - элемент под ним
+                    this.Map.appendingElement.setParent(pickInfo.pickedMesh.element);
+
+                    //Меняем положение фигуры и контрольного элемента
+                    this.Map.appendingElement.mesh.setAbsolutePosition(pickInfo.pickedPoint);
+
+
+                    //Меняем вращение фигуры в зависимости от нормали фигуры на которую навели
+                    let axis1 = pickInfo.getNormal();
+                    let axis2 = BABYLON.Vector3.Up();
+                    let axis3 = BABYLON.Vector3.Up();
+                    let start = new BABYLON.Vector3(Math.PI / 2, Math.PI / 2, 0);
+
+                    BABYLON.Vector3.CrossToRef(start, axis1, axis2);
+                    BABYLON.Vector3.CrossToRef(axis2, axis1, axis3);
+                    this.Map.appendingElement.mesh.rotation = BABYLON.Vector3.RotationFromAxis(axis3.negate(), axis1, axis2);
+                }
             }
         }
     }
 
+    /**
+     * Обработчик событый: Левая кнопка мыши нажата
+     * @param event
+     */
     onLeftPointerDown(event) {
         let scene = this.Map.scene;
+
+        //Если находимся в режиме APPEND
+        if (this.mode === 4) {
+            //И выбрана фигура для дополнения
+            if (this.Map.appendingElement) {
+                //Добавляем элемент в общую базу элементов
+                this.Map.elements.push(this.Map.appendingElement);
+
+                //Выходим из режима редактирования
+                this.setMode(0);
+
+                //Выходим из обработчика
+                return;
+            }
+        }
 
         this.startingMousePoint = {x: event.clientX, y: event.clientY};
 
@@ -352,6 +449,10 @@ export default class {
         }
     }
 
+    /**
+     * Обработчик событый: Левая кнопка мыши отжата
+     * @param event
+     */
     onLeftPointerUp(event) {
         let scene = this.Map.scene;
 
@@ -391,20 +492,35 @@ export default class {
         }
     }
 
+    /**
+     * Обработчик событый: Средняя кнопка мыши нажата
+     * @param event
+     */
     onMiddlePointerDown(event) {
         //
     }
 
+    /**
+     * Обработчик событый: Средняя кнопка мыши отжата
+     * @param event
+     */
     onMiddlePointerUp(event) {
         //Восстанавливаем состояние
         this.Map.undoStack.undo();
     }
 
-
+    /**
+     * Обработчик событый: Правая кнопка мыши нажата
+     * @param event
+     */
     onRightPointerDown(event) {
         //
     }
 
+    /**
+     * Обработчик событый: Правая кнопка отжата
+     * @param event
+     */
     onRightPointerUp(event) {
         this.Map.undoStack.redo();
     }
@@ -559,7 +675,7 @@ export default class {
      */
     showControl() {
         if (this.currentElement) {
-            //Вешаем на элемент инструменты редактирования в зависимости от выбранного режима
+            //Вешаем на элемент инструменты редактирования в зависимости от выбранного режима редактирования
             switch (this.mode) {
                 case 1:
                     this.showMoveAxis();
@@ -588,7 +704,7 @@ export default class {
         let scene = this.Map.scene;
         let mesh = this.currentElement.mesh;
 
-        // X AXIS
+        //Создаем ось X
         let axisX = BABYLON.Mesh.CreateLines("axisX", [
             new BABYLON.Vector3.Zero(),
             new BABYLON.Vector3(size, 0, 0)
@@ -596,7 +712,7 @@ export default class {
         axisX.position = mesh.absolutePosition;
         axisX.color = new BABYLON.Color3(1, 0, 0);
 
-        // Y AXIS
+        //Создаем ось Y
         let axisY = BABYLON.Mesh.CreateLines("axisY", [
             new BABYLON.Vector3.Zero(),
             new BABYLON.Vector3(0, size, 0)
@@ -604,7 +720,7 @@ export default class {
         axisY.position = mesh.absolutePosition;
         axisY.color = new BABYLON.Color3(0, 1, 0);
 
-        // Z AXIS
+        //Создаем ось Z
         let axisZ = BABYLON.Mesh.CreateLines("axisZ", [
             new BABYLON.Vector3.Zero(),
             new BABYLON.Vector3(0, 0, size)], scene);
@@ -624,8 +740,10 @@ export default class {
 
         let size = 2;
 
+        //Показать контрольные оси
         this.showControlAxises(size);
 
+        //Создаем фигуру editX
         let xBox = BABYLON.Mesh.CreateBox("editX", size / 10, scene);
         xBox.setPivotMatrix(BABYLON.Matrix.Translation(size, 0, 0));
         xBox.position = mesh.absolutePosition;
@@ -633,6 +751,7 @@ export default class {
         xBoxMaterial.diffuseColor = BABYLON.Color3.Red();
         xBox.material = xBoxMaterial;
 
+        //Создаем фигуру editY
         let yBox = BABYLON.Mesh.CreateBox("editY", size / 10, scene);
         yBox.setPivotMatrix(BABYLON.Matrix.Translation(0, size, 0));
         yBox.position = mesh.absolutePosition;
@@ -640,6 +759,7 @@ export default class {
         yBoxMaterial.diffuseColor = BABYLON.Color3.Green();
         yBox.material = yBoxMaterial;
 
+        //Создаем фигуру editZ
         let zBox = BABYLON.Mesh.CreateBox("editZ", size / 10, scene);
         zBox.setPivotMatrix(BABYLON.Matrix.Translation(0, 0, size));
         zBox.position = mesh.absolutePosition;
@@ -734,6 +854,7 @@ export default class {
 
         let size = 2;
 
+        //Создаем фигуру
         let dragCursor = BABYLON.Mesh.CreateSphere("dragCursor", 5, size / 5, scene);
         dragCursor.position = mesh.absolutePosition;
         let dragCursorMaterial = new BABYLON.StandardMaterial("dragCursorMaterial", scene);
@@ -748,6 +869,10 @@ export default class {
         })
     }
 
+    /**
+     * Выставить режим редактирования
+     * @param mode
+     */
     setMode(mode) {
         this.mode = mode;
 
@@ -756,7 +881,25 @@ export default class {
         this.showControl();
     }
 
+    /**
+     * Удалить выделенный элемент
+     */
+    deleteElement(){
+        //Прячем элементы управления элементов
+        this.hideControl();
+
+        //Только если выбран элемент для редактирования
+        if (this.currentElement){
+            //Удаляем элемент
+            this.currentElement.remove();
+        }
+    }
+
+    /**
+     * Функция отвечающая за инициализацию покадровых действий
+     */
     update() {
+
         //Меняем размер фигур управления в зависимости от удаленности камеры
         _.each(this.controlMeshes, (mesh) => {
             let scale = BABYLON.Vector3.Distance(this.Map.playerCamera.position, this.currentElement.mesh.position) / 10;
