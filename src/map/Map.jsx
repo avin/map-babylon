@@ -265,7 +265,6 @@ export default class {
      * @param elementType
      */
     appendElement(elementType){
-        console.log('appending', elementType);
 
         //Если мы уже в режиме добавления
         if (this.control.mode === 4){

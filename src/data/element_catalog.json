@@ -50,48 +50,6 @@
         "custom_model": false,
         "history": [],
         "states": []
-    },
-    {
-        "_id": 5,
-        "type_id": 3,
-        "properties": [],
-        "parent": 1,
-        "location": {
-            "position": {
-                "x": 6,
-                "y": 0,
-                "z": 0
-            },
-            "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-            }
-        },
-        "custom_model": false,
-        "history": [],
-        "states": []
-    },
-    {
-        "_id": 6,
-        "type_id": 3,
-        "properties": [],
-        "parent": 1,
-        "location": {
-            "position": {
-                "x": 9,
-                "y": 0,
-                "z": 0
-            },
-            "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-            }
-        },
-        "custom_model": false,
-        "history": [],
-        "states": []
     }
 
 ]

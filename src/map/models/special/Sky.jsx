@@ -1,15 +1,14 @@
-export default class {
+import ElementCore from '../ElementCore';
 
-    constructor(Map, options = {}) {
+export default class extends ElementCore {
+
+    constructor(Element, options = {}) {
+        super(Element);
 
         this.options = {};
         this.options.style = options.style || 'box';
         this.options.distance = options.distance || 1000;
         this.options.texture = options.texture || 'desert';
-
-        this.Map = Map;
-
-        this.mesh = null;
 
         this._init()
     }
@@ -27,9 +26,9 @@ export default class {
                 return false;
         }
 
-        if (this.mesh){
+        if (this.Element.mesh) {
             //Сферу не будет видно на миникарте
-            this.mesh.layerMask = 2;
+            this.Element.mesh.layerMask = 2;
         }
     }
 
@@ -37,16 +36,16 @@ export default class {
      * Создать купольное небо
      */
     createSphereSkybox() {
-        this.mesh = BABYLON.Mesh.CreateSphere("skyBox", 100, this.options.distance, this.Map.scene);
-        this.mesh.material = this.createGradientMaterial();
+        this.Element.mesh = BABYLON.Mesh.CreateSphere("skyBox", 100, this.options.distance, this.Map.scene);
+        this.Element.mesh.material = this.createGradientMaterial();
     }
 
     /**
      * Создать коробочное небо
      */
     createBoxSkybox() {
-        this.mesh = BABYLON.Mesh.CreateBox("skyBox", this.options.distance, this.Map.scene);
-        this.mesh.material = this.createTexturedMaterial();
+        this.Element.mesh = BABYLON.Mesh.CreateBox("skyBox", this.options.distance, this.Map.scene);
+        this.Element.mesh.material = this.createTexturedMaterial();
     }
 
     /**
@@ -76,11 +75,14 @@ export default class {
         return material;
     }
 
-    update(){
-        if (this.mesh){
+    /**
+     * Покадровое обновление элемента
+     */
+    update() {
+        if (this.Element.mesh) {
             //Двигаем небо вместе с камерой
-            this.mesh.position.x = this.Map.scene.activeCamera.position.x;
-            this.mesh.position.z = this.Map.scene.activeCamera.position.z
+            this.Element.mesh.position.x = this.Map.scene.activeCamera.position.x;
+            this.Element.mesh.position.z = this.Map.scene.activeCamera.position.z
         }
     }
 }

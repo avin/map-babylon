@@ -38,7 +38,7 @@ export default class {
                 break;
 
             case 'line':
-                //TODO
+                this.core = new Line(this);
                 break;
         }
 
@@ -157,6 +157,55 @@ export default class {
         _.remove(this.Map.elements, (element) => {
             return element === this;
         });
+    }
+
+
+    /**
+     * Элемент является специальным элементом?
+     * @returns {boolean}
+     */
+    isSpecial(){
+        return this.type.kind === 'special';
+    }
+
+    /**
+     * Элемент является фигурой?
+     * @returns {boolean}
+     */
+    isFigure(){
+        return this.type.kind === 'figure';
+    }
+
+    /**
+     * Элемент является линией?
+     * @returns {boolean}
+     */
+    isLine(){
+        return this.type.kind === 'line';
+    }
+
+    /**
+     * Получить родительскую разновидность
+     * @returns {*}
+     */
+    getType(){
+        return this.type;
+    }
+
+    /**
+     * Получить данные элемента
+     * @returns {*}
+     */
+    getData(){
+        return this.data;
+    }
+
+    /**
+     * Получить разновидность родителского типа
+     * @returns {*}
+     */
+    getTypeKind(){
+        return this.kind;
     }
 
     /**

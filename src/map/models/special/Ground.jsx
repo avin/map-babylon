@@ -1,13 +1,12 @@
-export default class {
+import ElementCore from '../ElementCore';
 
-    constructor(Map, options = {}) {
+export default class extends ElementCore {
+
+    constructor(Element, options = {}) {
+        super(Element);
 
         this.options = {};
         this.options.style = options.style || 'simple';
-
-        this.Map = Map;
-
-        this.mesh = null;
 
         this._init()
     }
@@ -26,28 +25,37 @@ export default class {
         }
     }
 
-    createSimpleGround(){
+    /**
+     * Создать простой граунд
+     */
+    createSimpleGround() {
         let drawDistance = 1000;
 
         // Создаем объект
-        this.mesh = new BABYLON.Mesh.CreateGround("ground", drawDistance, drawDistance, 50, this.Map.scene);
+        this.Element.mesh = new BABYLON.Mesh.CreateGround("ground", drawDistance, drawDistance, 50, this.Map.scene);
 
         // Добавляем материал
-        this.mesh.material = new BABYLON.StandardMaterial("groundMaterial", this.Map.scene);
-        this.mesh.material.diffuseColor = new BABYLON.Color3(0.6, 0.6, 0.5);
-        this.mesh.material.specularColor = new BABYLON.Color3(0.2, 0.2, 0.2);
-        this.mesh.material.glossiness = 0.2;
+        this.Element.mesh.material = new BABYLON.StandardMaterial("groundMaterial", this.Map.scene);
+        this.Element.mesh.material.diffuseColor = new BABYLON.Color3(0.6, 0.6, 0.5);
+        this.Element.mesh.material.specularColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+        this.Element.mesh.material.glossiness = 0.2;
     }
 
-    createTileGround(){
+    /**
+     * Создать граунд с тайловой текстурой
+     */
+    createTileGround() {
         //TODO
     }
 
-    update(){
-        if (this.mesh){
+    /**
+     * Покадровое обновление элемента
+     */
+    update() {
+        if (this.Element.mesh) {
             //Двигаем землю вместе с камерой
-            this.mesh.position.x = this.Map.scene.activeCamera.position.x;
-            this.mesh.position.z = this.Map.scene.activeCamera.position.z
+            this.Element.mesh.position.x = this.Map.scene.activeCamera.position.x;
+            this.Element.mesh.position.z = this.Map.scene.activeCamera.position.z
         }
     }
 }
