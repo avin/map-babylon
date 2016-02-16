@@ -1,4 +1,14 @@
-http://overpass-turbo.eu/
+## Сборка
+
+Предварительно требуется глобальная установка webpack
+```
+npm install
+webpack
+```
+
+### Выборка строений через Overpass
+
+Ссылка http://overpass-turbo.eu/
 ```
 [out:json][timeout:25];
 (

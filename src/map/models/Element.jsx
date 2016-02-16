@@ -1,5 +1,7 @@
 import Ground from './Special/Ground'
 import Sky from './Special/Sky'
+import Figure from './Figure/Figure'
+import Line from './Line/Line'
 
 export default class {
 
@@ -22,33 +24,17 @@ export default class {
             case 'special':
                 switch (this.type.code_class){
                     case 'sky':
-                        this.core = new Sky(this.Map);
-                        this.mesh = this.core.mesh;
+                        this.core = new Sky(this, {});
                         break;
 
                     case 'ground':
-                        this.core = new Ground(this.Map);
-                        this.mesh = this.core.mesh;
+                        this.core = new Ground(this, {});
                         break;
                 }
                 break;
 
             case 'figure':
-                if (this.data.custom_model){
-                    //Если у элемента индивидуальная модель
-                    //TODO
-                } else {
-                    //Иначе используем модель типа
-                    if (this.type.default_model){
-                        //Только если модель для данного типа загружена
-                        let elementMesh = this.Map.models[this.type.default_model].createInstance(this._id);
-                        elementMesh.scaling = new BABYLON.Vector3(1, 1, 1);
-
-                        let elementPosition = this.data.location.position;
-                        elementMesh.position = new BABYLON.Vector3(elementPosition.x, elementPosition.y, elementPosition.z);
-                        this.mesh = elementMesh;
-                    }
-                }
+                this.core = new Figure(this);
                 break;
 
             case 'line':
@@ -167,7 +153,7 @@ export default class {
             }
         });
 
-        //Убиваем элемент из общей базы элементов
+        //Убираем элемент из общей базы элементов
         _.remove(this.Map.elements, (element) => {
             return element === this;
         });
