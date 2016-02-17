@@ -131,7 +131,9 @@ export default class {
     remove(){
 
         //Удаляем саму фигуру элемента
-        this.mesh.dispose();
+        if (this.mesh){
+            this.mesh.dispose();
+        }
 
         //Убиваем всех потомков элемента
         _.each(this.Map.elements, (element) => {
@@ -195,6 +197,19 @@ export default class {
      */
     getTypeKind(){
         return this.type.kind;
+    }
+
+    /**
+     * Может ли элемент быть смонтирован на указанном родителе
+     * @param parentElement
+     */
+    canBeMountedOn(parentElement){
+        if (parentElement){
+            let parentType = parentElement.getType();
+            let ruleMountIds = _.get(this.type, 'rules.mount', []);
+
+            return _.includes(ruleMountIds, parentType._id);
+        }
     }
 
     /**

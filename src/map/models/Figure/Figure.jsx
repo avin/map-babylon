@@ -23,6 +23,8 @@ export default class extends ElementCore {
                 this.Element.mesh.position = new BABYLON.Vector3(elementPosition.x, elementPosition.y, elementPosition.z);
             }
         }
+
+        this.setMaterial();
     }
 
     /**

@@ -347,21 +347,19 @@ export default class {
                 {
                     let pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
 
-                        //Только обычные элементы
-                        return _.includes(this.Map.elements, mesh.element);
+                        //Только элементы к которым можно вязаться
+                        return this.currentElement.canBeMountedOn(mesh.element);
+
+                        //return _.includes(this.Map.elements, mesh.element);
                     }, false, camera);
 
                     if (pickInfo.hit) {
 
-                        //Назначем родителем элемента - элемент под ним
-                        //this.currentElement.setParent(pickInfo.pickedMesh.element);
+                        //Привязываем опорную точку к элементу на который перемещаем
+                        this.currentElement.core.setPointMeshParentElement(this.currentControlMesh, pickInfo.pickedMesh.element);
 
-                        //Меняем положение фигуры и контрольного элемента
-                        this.currentControlMesh.parent = pickInfo.pickedMesh;
+                        //Меняем положение опорной точки
                         this.currentControlMesh.setAbsolutePosition(pickInfo.pickedPoint);
-                        //this.currentControlMesh.position = pickInfo.pickedPoint;
-
-                        this.currentElement.core.updateLinePositions()
                     }
                     break;
                 }
@@ -391,8 +389,10 @@ export default class {
                                 return false;
                             }
 
-                            //Только обычные элементы
-                            return _.includes(this.Map.elements, mesh.element);
+                            //Только элементы системы на которых можнно монтировать
+                            return this.Map.appendingElement.canBeMountedOn(mesh.element);
+
+                            //return _.includes(this.Map.elements, mesh.element);
                         }, false, camera);
 
                         if (pickInfo.hit) {
@@ -540,8 +540,11 @@ export default class {
                              */
 
                             pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
+                                //Только элементы к которым можно вязаться
+                                return this.Map.appendingElement.canBeMountedOn(mesh.element);
+
                                 //Только обычные элементы
-                                return _.includes(this.Map.elements, mesh.element);
+                                //return _.includes(this.Map.elements, mesh.element);
                             }, false, this.Map.playerCamera);
 
                             if (pickInfo.hit) {

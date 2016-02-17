@@ -48,6 +48,7 @@ export default class extends ElementCore {
 
             //Определяем координаты точек линии для построения
             let linePositions = _.map(this.pointMeshes, (pointMesh) => {
+                pointMesh.computeWorldMatrix(true);
                 return (pointMesh.getAbsolutePosition());
             });
 
@@ -55,19 +56,25 @@ export default class extends ElementCore {
              * Рисуем линию в виде трубки
              */
 
-            console.log(linePositions);
-
             //Инче создаем новую
             this.Element.mesh = BABYLON.Mesh.CreateTube("lines", linePositions, 0.05, 4, null, 0, this.Map.scene, true);
-            this.Element.mesh.material = new BABYLON.StandardMaterial('lineMaterial', this.Map.scene);
-            this.Element.mesh.material.diffuseColor = new BABYLON.Color3(1, 0, 0);
-            this.Element.mesh.element = this.Element;
-
-            console.log(this.Element.mesh);
-
 
             //Рисуем линию в виде нитки
             //this.Element.mesh = BABYLON.Mesh.CreateLines("lines", linePositions, this.Map.scene);
+
+            this.setMaterial();
+
+            //Оставляем в mesh-e сслыку на родительский объект
+            if (this.Element.mesh){
+                this.Element.mesh.element = this.Element;
+            }
+        }
+    }
+
+    setPointMeshParentElement(pointMesh, parentElement){
+        if (parentElement && (!parentElement.isSpecial())){
+            console.log(parentElement.mesh);
+            pointMesh.parent = parentElement.mesh;
         }
     }
 
@@ -77,15 +84,14 @@ export default class extends ElementCore {
      * @param parent
      * @param isAbsolutePosition
      */
-    initPointMesh(position, parent, isAbsolutePosition = true) {
+    initPointMesh(position, parentElement, isAbsolutePosition = true) {
         let size = 0.2;
         let point = BABYLON.Mesh.CreateSphere('linePoint', 10, size, this.Map.scene);
         point.material = new BABYLON.StandardMaterial('material', this.Map.scene);
         point.material.diffuseColor = new BABYLON.Color3(1, 1, 0);
+        point.element = this.Element;
 
-        if (parent && !parent.isSpecial()){
-            point.parent = parent.mesh;
-        }
+        this.setPointMeshParentElement(point, parentElement);
 
         if (isAbsolutePosition){
             point.setAbsolutePosition(position);
@@ -137,9 +143,6 @@ export default class extends ElementCore {
      * Подсветить линию
      */
     enableHighlight(){
-        //Сохраняем оригинальный материал фигуры
-        this.Element.mesh.originalMaterial = this.Element.mesh.material;
-
         //Создаем новый материал для подсветки
         let highlightMaterial = new BABYLON.StandardMaterial('mat', this.Map.scene);
         highlightMaterial.diffuseColor = new BABYLON.Color3(0, 1, 1);
@@ -155,13 +158,15 @@ export default class extends ElementCore {
      */
     disableHighlight(highlightRelated = false){
         //Возвращаем оригинальный материал
-        this.Element.mesh.material = this.Element.mesh.originalMaterial;
+        this.setMaterial();
 
         this.hidePointMeshes();
     }
 
+    /**
+     * Поменять координаты линии без перерисовки
+     */
     updateLinePositions(){
-        console.log('ul');
         //Определяем координаты точек линии для перерисовки
         let linePositions = _.map(this.pointMeshes, (pointMesh) => {
             return (pointMesh.getAbsolutePosition());
@@ -172,8 +177,10 @@ export default class extends ElementCore {
 
     update(){
 
+        //Перестраиваем положение линии в зависимости от положения опорных точек
         this.updateLinePositions();
 
+        //Увеличиываем размер опорных точек в зависимости от удаленности камеры
         _.each(this.pointMeshes, (pointMesh) => {
             let scale = BABYLON.Vector3.Distance(this.Map.playerCamera.position, pointMesh.getAbsolutePosition()) / 10;
             pointMesh.scaling = new BABYLON.Vector3(scale, scale, scale);
