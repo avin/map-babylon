@@ -1,4 +1,6 @@
 import calcHelper from './helpers/calc';
+import uiBoxActions from '../ui-box/actions/uiBoxActions'
+import {KEY_CODES, CONTROL_MODES} from '../constants';
 
 export default class {
 
@@ -7,18 +9,6 @@ export default class {
         this.Map = Map;
         this.playerCamera = Map.playerCamera;
         this.miniCamera = Map.miniCamera;
-
-        //Определяем алиасы на коды клавиш
-        this.keyCodes = {
-            left: 65, //A
-            right: 68, //D
-            forward: 87, //W
-            back: 83, //S
-            up: 81, //Q
-            down: 90, //Z
-            shift: 16, //shift
-            delete: 46, //delete
-        };
 
         //Инициализируем состояния нажатых клавиш
         this.keyStates = {
@@ -32,16 +22,8 @@ export default class {
             delete: 0,
         };
 
-        //Возможные режимы редактирования элемента
-        this.modes = {
-            MOVE: 1,
-            ROTATE: 2,
-            DRAG: 3,
-            APPEND: 4,
-        };
-
         //Режим редактирования элемента
-        this.mode = 1;
+        this.setMode(CONTROL_MODES.MOVE);
 
         //Выбранный элемент который редактируем
         this.currentElement = null;
@@ -73,7 +55,7 @@ export default class {
 
         //Назначем состояние клавиш при нажатии
         this.Map.scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, (evt) => {
-            _.each(this.keyCodes, (keyCode, eventName) => {
+            _.each(KEY_CODES, (keyCode, eventName) => {
                 if ((evt.sourceEvent.keyCode) === keyCode) {
                     this.keyStates[eventName] = 1;
                 }
@@ -82,7 +64,7 @@ export default class {
 
         //Назначем состояние клавиш при отжатии
         this.Map.scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, (evt) => {
-            _.each(this.keyCodes, (keyCode, eventName) => {
+            _.each(KEY_CODES, (keyCode, eventName) => {
                 if ((evt.sourceEvent.keyCode) === keyCode) {
                     this.keyStates[eventName] = 0;
                 }
@@ -90,10 +72,10 @@ export default class {
         }));
 
         //Переопределяем клавиши управления камерой
-        this.playerCamera.keysDown = [this.keyCodes.back];
-        this.playerCamera.keysUp = [this.keyCodes.forward];
-        this.playerCamera.keysLeft = [this.keyCodes.left];
-        this.playerCamera.keysRight = [this.keyCodes.right];
+        this.playerCamera.keysDown = [KEY_CODES.back];
+        this.playerCamera.keysUp = [KEY_CODES.forward];
+        this.playerCamera.keysLeft = [KEY_CODES.left];
+        this.playerCamera.keysRight = [KEY_CODES.right];
 
         //Дейсвтие до рендера кадра
         this.Map.scene.registerBeforeRender(() => {
@@ -367,7 +349,7 @@ export default class {
         }
 
         //Если выбран режим APPEND
-        if (this.mode === 4) {
+        if (this.mode === CONTROL_MODES.APPEND) {
             //И выбрана фигура для дополнения
             if (this.Map.appendingElement) {
 
@@ -1006,6 +988,9 @@ export default class {
         //Переделываем элементы управления
         this.hideControl();
         this.showControl();
+
+        //Меняем состояние кнопки интерфейса
+        uiBoxActions.setControlMode(mode, false);
     }
 
     /**

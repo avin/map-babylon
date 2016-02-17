@@ -1,6 +1,8 @@
 import Reflux from 'reflux';
 import React from 'react';
+import {CONTROL_MODES, VIEW_MODES} from '../../constants'
 import uiBoxActions from '../actions/uiBoxActions'
+
 
 export default Reflux.createStore({
     listenables: [uiBoxActions],
@@ -8,16 +10,22 @@ export default Reflux.createStore({
     /**
      * Выставит режим управления
      */
-    onSetControlMode(controlMode){
-        window.app.map.setControlMode(controlMode);
+    onSetControlMode(controlMode, action=true){
+        if (action){
+            window.app.map.setControlMode(controlMode);
+        }
+
         this.updateData({controlMode: controlMode});
     },
 
     /**
      * Выставит режим отображения
      */
-    onSetViewMode(viewMode){
-        window.app.map.setViewMode(viewMode);
+    onSetViewMode(viewMode, action=true){
+        if (action){
+            window.app.map.setViewMode(viewMode);
+        }
+
         this.updateData({viewMode: viewMode});
     },
 
@@ -37,8 +45,8 @@ export default Reflux.createStore({
      */
     getInitialState: function () {
         this.data = {
-            controlMode: 1,
-            viewMode: 1,
+            controlMode: CONTROL_MODES.MOVE,
+            viewMode: VIEW_MODES.CLASSIC,
         };
         return this.data;
     }

@@ -2,6 +2,7 @@ import Ground from './Special/Ground'
 import Sky from './Special/Sky'
 import Figure from './Figure/Figure'
 import Line from './Line/Line'
+import {VISIBILITY} from '../../constants'
 
 export default class {
 
@@ -42,6 +43,9 @@ export default class {
                 break;
         }
 
+        //По умолчанию нормальные режим отображения
+        this.core.setVisibilityNormal();
+
         //Оставляем в mesh-e сслыку на родительский объект
         if (this.mesh){
             this.mesh.element = this;
@@ -69,14 +73,22 @@ export default class {
         }
     }
 
+
     /**
-     * Показать фигуру элемента на карте
+     * Выставить режим отобращения элемента
+     * @param visibility
      */
-    show(){
-        if (this.mesh.sourceMesh){
-            this.mesh.sourceMesh.visibility = 1;
-        } else {
-            this.mesh.visibility = 1;
+    setVisibility(visibility){
+        switch (visibility){
+            case VISIBILITY.NORMAL:
+                this.core.setVisibilityNormal();
+                break;
+            case VISIBILITY.TRANSPARENT:
+                this.core.setVisibilityTransparent();
+                break;
+            case VISIBILITY.HIDDEN:
+                this.core.setVisibilityHidden();
+                break;
         }
     }
 
@@ -88,6 +100,10 @@ export default class {
             this.mesh.sourceMesh.visibility = 0;
         } else {
             this.mesh.visibility = 0;
+        }
+
+        if (this.line){
+            this.line.visibility = 0;
         }
     }
 

@@ -60,6 +60,43 @@ export default class extends ElementCore {
     }
 
     /**
+     * Выставить нормальный режим отображения для элемента
+     */
+    setVisibilityNormal(){
+        super.setVisibilityNormal();
+
+        let mesh = this.Element.mesh.sourceMesh || this.Element.mesh;
+
+        mesh.visibility = 1;
+        mesh.material.alpha = 1;
+    }
+
+    /**
+     * Выставить прозрачный режим отображения для элемента
+     */
+    setVisibilityTransparent(){
+        super.setVisibilityTransparent();
+
+        let mesh = this.Element.mesh.sourceMesh || this.Element.mesh;
+
+        mesh.visibility = 1;
+        mesh.material.alpha = 0.3;
+    }
+
+    /**
+     * Выставить скрытый режим отображения для элемента
+     */
+    setVisibilityHidden(){
+        super.setVisibilityHidden();
+
+        let mesh = this.Element.mesh.sourceMesh || this.Element.mesh;
+
+        mesh.visibility = 0;
+        mesh.material.alpha = 1;
+    }
+
+
+    /**
      * Покадровое обновление элемента
      */
     update() {

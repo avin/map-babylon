@@ -99,6 +99,8 @@ export default class {
     _initScene() {
         this.scene = new BABYLON.Scene(this.engine);
 
+        this.scene.clearColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+
         //this.scene.debugLayer.show();
 
         BABYLON.SceneOptimizer.OptimizeAsync(this.scene, BABYLON.SceneOptimizerOptions.ModerateDegradationAllowed(50),
@@ -164,24 +166,14 @@ export default class {
     }
 
     /**
-     * Показать элементы определенного типа на карте (используется для фильтров)
+     * Выставить режим отобращения для типа элементов
      * @param typeId
+     * @param visibility
      */
-    showElementsByTypeId(typeId) {
+    setVisibilityOfType(typeId, visibility) {
         let typedElements = _.filter(this.elements, {type: {_id: typeId}});
         _.each(typedElements, (element) => {
-            element.show();
-        });
-    }
-
-    /**
-     * Скрыть элементы определенного типа на карте (используется для фильтров)
-     * @param typeId
-     */
-    hideElementsByTypeId(typeId) {
-        let typedElements = _.filter(this.elements, {type: {_id: typeId}});
-        _.each(typedElements, (element) => {
-            element.hide();
+            element.setVisibility(visibility);
         });
     }
 

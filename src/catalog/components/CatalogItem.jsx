@@ -3,12 +3,11 @@ import catalogActions from '../actions/catalogActions'
 
 import Toggle from './Toggle'
 import Content from './Content'
+import Visibility from './Visibility'
+
 
 
 export default React.createClass({
-    toggleVisible(){
-        catalogActions.toggleVisible(this.props.item._id)
-    },
     handleShowChildren(){
         catalogActions.toggleShowChildren(this.props.item._id)
     },
@@ -67,7 +66,7 @@ export default React.createClass({
                         {addButton}
                     </div>
                     <div className="col-xs-1">
-                        <input type="checkbox" checked={isVisible} onChange={this.toggleVisible}/>
+                        <Visibility item={this.props.item}/>
                     </div>
                 </div>
                 <div className="children">

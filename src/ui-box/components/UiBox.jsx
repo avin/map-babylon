@@ -1,6 +1,6 @@
 import React from 'react';
 import Reflux from 'reflux';
-
+import {CONTROL_MODES, VIEW_MODES} from '../../constants'
 import UiGroup  from './UiGroup';
 
 import uiBoxActions from '../actions/uiBoxActions'
@@ -14,19 +14,19 @@ export default React.createClass({
             {
                 name: 'Перемещение по осям',
                 icon: 'icon_Cascade_Axis_40x.png',
-                value: 1,
+                value: CONTROL_MODES.MOVE,
                 action: uiBoxActions.setControlMode
             },
             {
                 name: 'Вращение',
                 icon: 'icon_rotateb_40x.png',
-                value: 2,
+                value: CONTROL_MODES.ROTATE,
                 action: uiBoxActions.setControlMode
             },
             {
                 name: 'Drag\'n\'Drop',
                 icon: 'icon_BlueprintEditor_Components_40x.png',
-                value: 3,
+                value: CONTROL_MODES.DRAG,
                 action: uiBoxActions.setControlMode
             }
         ];
@@ -35,25 +35,25 @@ export default React.createClass({
             {
                 name: 'Тела',
                 icon: 'icon_box_40x.png',
-                value: 1,
+                value: VIEW_MODES.CLASSIC,
                 action: uiBoxActions.setViewMode
             },
             {
                 name: 'Тела с гранями',
                 icon: 'icon_Mode_BSP_40x.png',
-                value: 2,
+                value: VIEW_MODES.CLASSIC_WITH_EDGES,
                 action: uiBoxActions.setViewMode
             },
             {
                 name: 'Только грани',
                 icon: 'icon_bspmode_40x.png',
-                value: 3,
+                value: VIEW_MODES.EDGES,
                 action: uiBoxActions.setViewMode
             },
             {
                 name: 'Отладочные грани',
                 icon: 'icon_PhAT_NewBody_40x.png',
-                value: 4,
+                value: VIEW_MODES.DEBUG,
                 action: uiBoxActions.setViewMode
             }
         ];

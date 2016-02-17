@@ -26,6 +26,7 @@ export default class extends ElementCore {
                 return false;
         }
 
+        //Данная фигура не будет отображаться на миникарте
         if (this.Element.mesh) {
             //Сферу не будет видно на миникарте
             this.Element.mesh.layerMask = 2;
@@ -37,6 +38,11 @@ export default class extends ElementCore {
      */
     createSphereSkybox() {
         this.Element.mesh = BABYLON.Mesh.CreateSphere("skyBox", 100, this.options.distance, this.Map.scene);
+
+        this.setMaterial();
+    }
+
+    setMaterial(){
         this.Element.mesh.material = this.createGradientMaterial();
     }
 
@@ -73,6 +79,35 @@ export default class extends ElementCore {
         material.disableLighting = true;
 
         return material;
+    }
+
+    /**
+     * Выставить нормальный режим отображения для элемента
+     */
+    setVisibilityNormal(){
+        super.setVisibilityNormal();
+
+        this.Element.mesh.visibility = 1;
+        this.Element.mesh.material = this.createTexturedMaterial();
+    }
+
+    /**
+     * Выставить прозрачный режим отображения для элемента
+     */
+    setVisibilityTransparent(){
+        super.setVisibilityTransparent();
+
+        this.Element.mesh.visibility = 1;
+        this.Element.mesh.material = this.createGradientMaterial();
+    }
+
+    /**
+     * Выставить скрытый режим отображения для элемента
+     */
+    setVisibilityHidden(){
+        super.setVisibilityHidden();
+
+        this.Element.mesh.visibility = 0;
     }
 
     /**

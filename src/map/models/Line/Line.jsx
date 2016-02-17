@@ -5,6 +5,9 @@ export default class extends ElementCore {
     constructor(Element) {
         super(Element);
 
+        this.pointMeshSize = 0.3;
+        this.tubeRadius = this.pointMeshSize / 3;
+
         //Точки окончаний и изгибов
         this.pointMeshes = [];
 
@@ -39,12 +42,12 @@ export default class extends ElementCore {
      * Нарисовать/Перерисовать линию
      */
     drawLine() {
-        if (this.Element.mesh){
+        if (this.Element.mesh) {
             this.Element.mesh.dispose();
         }
 
         //Рисуем линию только если кол-во секции больше нуля
-        if (this.getSectionsCount() > 0){
+        if (this.getSectionsCount() > 0) {
 
             //Определяем координаты точек линии для построения
             let linePositions = _.map(this.pointMeshes, (pointMesh) => {
@@ -56,24 +59,28 @@ export default class extends ElementCore {
              * Рисуем линию в виде трубки
              */
 
-            //Инче создаем новую
-            this.Element.mesh = BABYLON.Mesh.CreateTube("lines", linePositions, 0.05, 4, null, 0, this.Map.scene, true);
+                //Инче создаем новую
+            this.Element.mesh = BABYLON.Mesh.CreateTube("lines", linePositions, this.tubeRadius, 3, null, 0, this.Map.scene, true);
 
             //Рисуем линию в виде нитки
-            //this.Element.mesh = BABYLON.Mesh.CreateLines("lines", linePositions, this.Map.scene);
+            this.Element.line = BABYLON.Mesh.CreateLines("lines", linePositions, this.Map.scene, true);
 
             this.setMaterial();
 
             //Оставляем в mesh-e сслыку на родительский объект
-            if (this.Element.mesh){
+            if (this.Element.mesh) {
                 this.Element.mesh.element = this.Element;
             }
         }
     }
 
-    setPointMeshParentElement(pointMesh, parentElement){
-        if (parentElement && (!parentElement.isSpecial())){
-            console.log(parentElement.mesh);
+    /**
+     * Привязка опорной точки к родителю
+     * @param pointMesh
+     * @param parentElement
+     */
+    setPointMeshParentElement(pointMesh, parentElement) {
+        if (parentElement && (!parentElement.isSpecial())) {
             pointMesh.parent = parentElement.mesh;
         }
     }
@@ -81,19 +88,19 @@ export default class extends ElementCore {
     /**
      * Инициализация точки излома или окончания
      * @param position
-     * @param parent
+     * @param parentElement
      * @param isAbsolutePosition
      */
     initPointMesh(position, parentElement, isAbsolutePosition = true) {
-        let size = 0.2;
-        let point = BABYLON.Mesh.CreateSphere('linePoint', 10, size, this.Map.scene);
+        let point = BABYLON.Mesh.CreateSphere('linePoint', 10, this.pointMeshSize, this.Map.scene);
         point.material = new BABYLON.StandardMaterial('material', this.Map.scene);
         point.material.diffuseColor = new BABYLON.Color3(1, 1, 0);
+        point.material.alpha = 0.5;
         point.element = this.Element;
 
         this.setPointMeshParentElement(point, parentElement);
 
-        if (isAbsolutePosition){
+        if (isAbsolutePosition) {
             point.setAbsolutePosition(position);
         } else {
             point.position = position;
@@ -105,7 +112,7 @@ export default class extends ElementCore {
     /**
      * Добавить точку в линию
      */
-    addPoint(absolutePosition, parent){
+    addPoint(absolutePosition, parent) {
         //Если такой точки нет - продолжаем
         this.initPointMesh(absolutePosition, parent, true);
 
@@ -117,14 +124,14 @@ export default class extends ElementCore {
      * Получить кол-во прямых участков на линии
      * @returns {number}
      */
-    getSectionsCount(){
+    getSectionsCount() {
         return this.pointMeshes.length - 1;
     }
 
     /**
      * Показать вспомогательниые фигуры изломов и окончаний для управления
      */
-    showPointMeshes(){
+    showPointMeshes() {
         _.each(this.pointMeshes, (pointMesh) => {
             pointMesh.isVisible = true;
         })
@@ -133,7 +140,7 @@ export default class extends ElementCore {
     /**
      * Спрятать вспомогательниые фигуры изломов и окончаний для управления
      */
-    hidePointMeshes(){
+    hidePointMeshes() {
         _.each(this.pointMeshes, (pointMesh) => {
             pointMesh.isVisible = false;
         })
@@ -142,7 +149,7 @@ export default class extends ElementCore {
     /**
      * Подсветить линию
      */
-    enableHighlight(){
+    enableHighlight() {
         //Создаем новый материал для подсветки
         let highlightMaterial = new BABYLON.StandardMaterial('mat', this.Map.scene);
         highlightMaterial.diffuseColor = new BABYLON.Color3(0, 1, 1);
@@ -156,7 +163,7 @@ export default class extends ElementCore {
     /**
      * Убрать подсветку
      */
-    disableHighlight(highlightRelated = false){
+    disableHighlight(highlightRelated = false) {
         //Возвращаем оригинальный материал
         this.setMaterial();
 
@@ -164,18 +171,70 @@ export default class extends ElementCore {
     }
 
     /**
+     * Выставить нормальный режим отображения для элемента
+     */
+    setVisibilityNormal(){
+        super.setVisibilityNormal();
+
+        if (this.Element.mesh){
+            this.Element.mesh.visibility = 1;
+        }
+
+        if (this.Element.line){
+            this.Element.line.visibility = 0;
+        }
+    }
+
+    /**
+     * Выставить прозрачный режим отображения для элемента
+     */
+    setVisibilityTransparent(){
+        super.setVisibilityTransparent();
+
+        if (this.Element.mesh){
+            this.Element.mesh.visibility = 0;
+        }
+
+        if (this.Element.line){
+            this.Element.line.visibility = 1;
+        }
+    }
+
+    /**
+     * Выставить скрытый режим отображения для элемента
+     */
+    setVisibilityHidden(){
+        super.setVisibilityHidden();
+
+        if (this.Element.mesh){
+            this.Element.mesh.visibility = 0;
+        }
+
+        if (this.Element.line){
+            this.Element.line.visibility = 0;
+        }
+    }
+
+    /**
      * Поменять координаты линии без перерисовки
      */
-    updateLinePositions(){
+    updateLinePositions() {
         //Определяем координаты точек линии для перерисовки
         let linePositions = _.map(this.pointMeshes, (pointMesh) => {
             return (pointMesh.getAbsolutePosition());
         });
 
         this.Element.mesh = BABYLON.Mesh.CreateTube(null, linePositions, 0.05, null, null, null, null, null, null, this.Element.mesh);
+
+        //Рисуем линию в виде нитки
+        this.Element.line = BABYLON.Mesh.CreateLines(null, linePositions, null, null, this.Element.line);
     }
 
-    update(){
+    setMaterial(){
+        this.Element.line.color = super.setMaterial();
+    }
+
+    update() {
 
         //Перестраиваем положение линии в зависимости от положения опорных точек
         this.updateLinePositions();

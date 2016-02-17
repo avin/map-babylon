@@ -34,11 +34,7 @@ export default class extends ElementCore {
         // Создаем объект
         this.Element.mesh = new BABYLON.Mesh.CreateGround("ground", drawDistance, drawDistance, 50, this.Map.scene);
 
-        // Добавляем материал
-        this.Element.mesh.material = new BABYLON.StandardMaterial("groundMaterial", this.Map.scene);
-        this.Element.mesh.material.diffuseColor = new BABYLON.Color3(0.6, 0.6, 0.5);
-        this.Element.mesh.material.specularColor = new BABYLON.Color3(0.2, 0.2, 0.2);
-        this.Element.mesh.material.glossiness = 0.2;
+        this.setMaterial();
     }
 
     /**
@@ -46,6 +42,36 @@ export default class extends ElementCore {
      */
     createTileGround() {
         //TODO
+    }
+
+    /**
+     * Выставить нормальный режим отображения для элемента
+     */
+    setVisibilityNormal(){
+        super.setVisibilityNormal();
+
+        this.Element.mesh.visibility = 1;
+        this.Element.mesh.material.alpha = 1;
+    }
+
+    /**
+     * Выставить прозрачный режим отображения для элемента
+     */
+    setVisibilityTransparent(){
+        super.setVisibilityTransparent();
+
+        this.Element.mesh.visibility = 1;
+        this.Element.mesh.material.alpha = 0.3;
+    }
+
+    /**
+     * Выставить скрытый режим отображения для элемента
+     */
+    setVisibilityHidden(){
+        super.setVisibilityHidden();
+
+        this.Element.mesh.visibility = 0;
+        this.Element.mesh.material.alpha = 1;
     }
 
     /**

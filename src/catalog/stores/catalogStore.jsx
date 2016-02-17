@@ -2,6 +2,7 @@ import Reflux from 'reflux';
 import React from 'react';
 import catalogActions from '../actions/catalogActions'
 import typeCatalog from '../../data/type_catalog.json'
+import {VISIBILITY} from '../../constants'
 
 export default Reflux.createStore({
     listenables: [catalogActions],
@@ -52,18 +53,13 @@ export default Reflux.createStore({
     },
 
     /**
-     * Спрятать/показать элементы этого типа на карте
+     * Выставить режим отобращения для типа элементов
      * @param catalogItemId
+     * @param visibility
      */
-    onToggleVisible(catalogItemId){
-        let catalogItem = _.find(this.data.catalog, {_id: catalogItemId});
-        let isHidden = !catalogItem.is_hidden;
-        if (isHidden){
-            window.app.map.hideElementsByTypeId(catalogItemId)
-        } else {
-            window.app.map.showElementsByTypeId(catalogItemId)
-        }
-        this.updateCatalogItem(catalogItemId, {is_hidden: isHidden})
+    onSetVisibility(catalogItemId, visibility){
+        window.app.map.setVisibilityOfType(catalogItemId, visibility);
+        this.updateCatalogItem(catalogItemId, {visibility: visibility})
     },
 
     /**
@@ -122,6 +118,11 @@ export default Reflux.createStore({
      * @returns {{catalog, searchValue: string, options: {showCatalog: boolean}}|*}
      */
     getInitialState: function () {
+        //Присваиваем всем типам тип отображения по умолчанию
+        _.each(typeCatalog, (type) => {
+            type.visibility = type.visibility || VISIBILITY.NORMAL;
+        });
+
         this.data = {
             catalog: typeCatalog,
             searchValue: '',
