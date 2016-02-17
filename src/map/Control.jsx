@@ -170,7 +170,7 @@ export default class {
     }
 
     /**
-     * Координатор обработчика событый: Любое кнопка мыши нажата
+     * Координатор обработчика событый: Любая кнопка мыши нажата
      * @param event
      */
     onPointerDown(event) {
@@ -343,25 +343,9 @@ export default class {
                     }
                     break;
                 }
-            }
-        }
-
-        //Если выбран режим APPEND
-        if (this.mode === 4) {
-            //И выбрана фигура для дополнения
-            if (this.Map.appendingElement) {
-
-                if (this.Map.appendingElement.isLine()) {
-                    //ничего не делаем
-                } else if (this.Map.appendingElement.isFigure()) {
-                    /**
-                     * Перемещаем фигуру за курсором
-                     */
+                case 'linePoint':
+                {
                     let pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
-                        //Исключаем положение самой перетаскиваемой
-                        if (_.eq(mesh, this.Map.appendingElement.mesh)) {
-                            return false;
-                        }
 
                         //Только обычные элементы
                         return _.includes(this.Map.elements, mesh.element);
@@ -370,20 +354,66 @@ export default class {
                     if (pickInfo.hit) {
 
                         //Назначем родителем элемента - элемент под ним
-                        this.Map.appendingElement.setParent(pickInfo.pickedMesh.element);
+                        //this.currentElement.setParent(pickInfo.pickedMesh.element);
 
                         //Меняем положение фигуры и контрольного элемента
-                        this.Map.appendingElement.mesh.setAbsolutePosition(pickInfo.pickedPoint);
+                        this.currentControlMesh.parent = pickInfo.pickedMesh;
+                        this.currentControlMesh.setAbsolutePosition(pickInfo.pickedPoint);
+                        //this.currentControlMesh.position = pickInfo.pickedPoint;
 
-                        //Меняем вращение фигуры в зависимости от нормали фигуры на которую навели
-                        let axis1 = pickInfo.getNormal();
-                        let axis2 = BABYLON.Vector3.Up();
-                        let axis3 = BABYLON.Vector3.Up();
-                        let start = new BABYLON.Vector3(Math.PI / 2, Math.PI / 2, 0);
+                        this.currentElement.core.updateLinePositions()
+                    }
+                    break;
+                }
+            }
+        }
 
-                        BABYLON.Vector3.CrossToRef(start, axis1, axis2);
-                        BABYLON.Vector3.CrossToRef(axis2, axis1, axis3);
-                        this.Map.appendingElement.mesh.rotation = BABYLON.Vector3.RotationFromAxis(axis3.negate(), axis1, axis2);
+        //Если выбран режим APPEND
+        if (this.mode === 4) {
+            //И выбрана фигура для дополнения
+            if (this.Map.appendingElement) {
+
+                switch (this.Map.appendingElement.getTypeKind()) {
+                    case 'line':
+                    {
+                        //ничего не делаем
+                        break;
+                    }
+
+                    case 'figure':
+                    {
+                        /**
+                         * Перемещаем фигуру за курсором
+                         */
+                        let pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
+                            //Исключаем положение самой перетаскиваемой
+                            if (_.eq(mesh, this.Map.appendingElement.mesh)) {
+                                return false;
+                            }
+
+                            //Только обычные элементы
+                            return _.includes(this.Map.elements, mesh.element);
+                        }, false, camera);
+
+                        if (pickInfo.hit) {
+
+                            //Назначем родителем элемента - элемент под ним
+                            this.Map.appendingElement.setParent(pickInfo.pickedMesh.element);
+
+                            //Меняем положение фигуры и контрольного элемента
+                            this.Map.appendingElement.mesh.setAbsolutePosition(pickInfo.pickedPoint);
+
+                            //Меняем вращение фигуры в зависимости от нормали фигуры на которую навели
+                            let axis1 = pickInfo.getNormal();
+                            let axis2 = BABYLON.Vector3.Up();
+                            let axis3 = BABYLON.Vector3.Up();
+                            let start = new BABYLON.Vector3(Math.PI / 2, Math.PI / 2, 0);
+
+                            BABYLON.Vector3.CrossToRef(start, axis1, axis2);
+                            BABYLON.Vector3.CrossToRef(axis2, axis1, axis3);
+                            this.Map.appendingElement.mesh.rotation = BABYLON.Vector3.RotationFromAxis(axis3.negate(), axis1, axis2);
+                        }
+                        break;
                     }
                 }
             }
@@ -400,41 +430,63 @@ export default class {
 
         this.startingMousePoint = {x: event.clientX, y: event.clientY};
 
-        //Проверяем если ткнули в фигуру управления
-        pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
-            return _.includes(this.controlMeshes, mesh);
-        }, false, this.Map.playerCamera);
+        if (this.currentElement) {
+            switch (this.currentElement.getTypeKind()) {
+                case 'line':
+                {
+                    //Проверяем если ткнули в точку излома линии
+                    pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
+                        return _.includes(this.currentElement.core.pointMeshes, mesh);
+                    }, false, this.Map.playerCamera);
 
-        //Если попали
-        if (pickInfo.hit) {
-            //Назначаем текущую фигуру управления
-            this.setCurrentControlMesh(pickInfo.pickedMesh);
+                    //Если попали в излома
+                    if (pickInfo.hit) {
+                        this.setCurrentControlMesh(pickInfo.pickedMesh);
+                    }
 
-            //Рисуем вспомогательные плоскости
-            switch (pickInfo.pickedMesh.name) {
-                case 'editX':
-                    this.createSupportPlane(pickInfo.pickedMesh);
-                    this.supportPlane.rotation.x = Math.PI / 2;
                     break;
-                case 'editZ':
-                    this.createSupportPlane(pickInfo.pickedMesh);
-                    this.supportPlane.rotation.x = Math.PI / 2;
+                }
+                case 'figure':
+                {
+                    //Проверяем если ткнули в фигуру управления
+                    pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
+                        return _.includes(this.controlMeshes, mesh);
+                    }, false, this.Map.playerCamera);
+
+                    //Если попали в фигуру управления
+                    if (pickInfo.hit) {
+                        //Назначаем текущую фигуру управления
+                        this.setCurrentControlMesh(pickInfo.pickedMesh);
+
+                        //Рисуем вспомогательные плоскости
+                        switch (pickInfo.pickedMesh.name) {
+                            case 'editX':
+                                this.createSupportPlane(pickInfo.pickedMesh);
+                                this.supportPlane.rotation.x = Math.PI / 2;
+                                break;
+                            case 'editZ':
+                                this.createSupportPlane(pickInfo.pickedMesh);
+                                this.supportPlane.rotation.x = Math.PI / 2;
+                                break;
+                            case 'editY':
+                                this.createSupportPlane(pickInfo.pickedMesh);
+                                break;
+                            case 'arcXY':
+                                this.createSupportPlane(pickInfo.pickedMesh);
+                                break;
+                            case 'arcXZ':
+                                this.createSupportPlane(pickInfo.pickedMesh, new BABYLON.Vector3(Math.PI / 2, 0, 0));
+                                break;
+                            case 'arcZY':
+                                this.createSupportPlane(pickInfo.pickedMesh, new BABYLON.Vector3(0, Math.PI / 2, 0));
+                                break;
+                        }
+                    } else {
+                        this.unsetCurrentControlMesh();
+                    }
                     break;
-                case 'editY':
-                    this.createSupportPlane(pickInfo.pickedMesh);
-                    break;
-                case 'arcXY':
-                    this.createSupportPlane(pickInfo.pickedMesh);
-                    break;
-                case 'arcXZ':
-                    this.createSupportPlane(pickInfo.pickedMesh, new BABYLON.Vector3(Math.PI / 2, 0, 0));
-                    break;
-                case 'arcZY':
-                    this.createSupportPlane(pickInfo.pickedMesh, new BABYLON.Vector3(0, Math.PI / 2, 0));
-                    break;
+                }
             }
-        } else {
-            this.unsetCurrentControlMesh();
         }
 
         if (this.currentElement) {
@@ -460,19 +512,47 @@ export default class {
                 //Если точка отжима такаяже как и клика - выбираем элемент под курсором
                 if (_.isEqual(this.startingMousePoint, this.endingMousePoint)) {
 
-                    //Если дополняемые элемент линия
-                    if (this.Map.appendingElement.isLine()) {
+                    switch (this.Map.appendingElement.getTypeKind()) {
+                        case 'line':
+                        {
+                            /**
+                             * Если попали в колено - завершаем построение линии
+                             */
 
-                        /**
-                         * Сначала проверяем - если мы попали в колено текущей линии
-                         */
+                            pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
+                                return _.includes(this.Map.appendingElement.core.pointMeshes, mesh);
+                            }, false, this.Map.playerCamera);
 
-                        pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
-                            return _.includes(this.Map.appendingElement.core.pointMeshes, mesh);
-                        }, false, this.Map.playerCamera);
+                            if (pickInfo.hit) {
 
-                        if (pickInfo.hit) {
+                                //Добавляем элемент в общую базу элементов
+                                this.Map.elements.push(this.Map.appendingElement);
 
+                                //Выходим из режима редактирования
+                                this.setMode(0);
+
+                                //Выходим из обработчика
+                                return;
+                            }
+
+                            /**
+                             * Добавляем точку нажатия в качестве опорной точки линии
+                             */
+
+                            pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
+                                //Только обычные элементы
+                                return _.includes(this.Map.elements, mesh.element);
+                            }, false, this.Map.playerCamera);
+
+                            if (pickInfo.hit) {
+                                //Добавляем точку в линию
+                                this.Map.appendingElement.core.addPoint(pickInfo.pickedPoint, pickInfo.pickedMesh.element, true);
+                            }
+
+                            break;
+                        }
+                        case 'figure':
+                        {
                             //Добавляем элемент в общую базу элементов
                             this.Map.elements.push(this.Map.appendingElement);
 
@@ -480,38 +560,11 @@ export default class {
                             this.setMode(0);
 
                             //Выходим из обработчика
-                            return;
+                            break;
                         }
-
-                        /**
-                         * Определяем координату где нажали
-                         */
-
-                        pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
-                            //Только обычные элементы
-                            return _.includes(this.Map.elements, mesh.element);
-                        }, false, this.Map.playerCamera);
-
-                        if (pickInfo.hit) {
-                            //Добавляем точку в линию
-                            this.Map.appendingElement.core.addPoint(pickInfo.pickedPoint, pickInfo.pickedMesh.element, true);
-                        }
-                    }
-                    //Или это фигура
-                    else if (this.Map.appendingElement.isFigure()) {
-                        //Добавляем элемент в общую базу элементов
-                        this.Map.elements.push(this.Map.appendingElement);
-
-                        //Выходим из режима редактирования
-                        this.setMode(0);
-
-                        //Выходим из обработчика
-                        return;
                     }
                 }
-
             }
-
             return;
         }
 
@@ -732,17 +785,28 @@ export default class {
      */
     showControl() {
         if (this.currentElement) {
-            //Вешаем на элемент инструменты редактирования в зависимости от выбранного режима редактирования
-            switch (this.mode) {
-                case 1:
-                    this.showMoveAxis();
+            switch (this.currentElement.getTypeKind()) {
+                case 'line':
+                {
+                    //Ничего не делаем
                     break;
-                case 2:
-                    this.showRotateAxis();
+                }
+                case 'figure':
+                {
+                    //Вешаем на элемент инструменты редактирования в зависимости от выбранного режима редактирования
+                    switch (this.mode) {
+                        case 1:
+                            this.showMoveAxis();
+                            break;
+                        case 2:
+                            this.showRotateAxis();
+                            break;
+                        case 3:
+                            this.showDragCursor();
+                            break;
+                    }
                     break;
-                case 3:
-                    this.showDragCursor();
-                    break;
+                }
             }
         }
     }
@@ -922,6 +986,11 @@ export default class {
         _.each(this.controlMeshes, (mesh) => {
             mesh.renderingGroupId = 1;
         })
+    }
+
+    showLinePoints() {
+        let mesh = this.currentElement.mesh;
+        let scene = this.Map.scene;
     }
 
     /**

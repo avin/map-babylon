@@ -52,31 +52,20 @@ export default class {
      * Подсветить элемент
      */
     enableHighlight(highlightRelated = false){
-        this.mesh.showBoundingBox = true;
-        //Если подсвечивать родственные элементы
-        if (highlightRelated){
-
-            //Обходим элементы системы в поисках потомков
-            _.each(this.Map.elements, (element) => {
-                if (_.eq(element.parent, this)){
-                    //И подсвечиваем их и их потомков
-                    element.enableHighlight(true);
-                }
-            })
+        //Только для обычных элементов
+        if (!this.isSpecial()){
+            this.core.enableHighlight(highlightRelated);
         }
+
     }
 
     /**
      * Убрать подсветку
      */
     disableHighlight(highlightRelated = false){
-        //Если подсвечены родственные элементе - обходим все элементы системы
-        if (highlightRelated){
-            _.each(this.Map.elements, (element) => {
-                element.disableHighlight();
-            });
-        } else {
-            this.mesh.showBoundingBox = false;
+        //Только для обычных элементов
+        if (!this.isSpecial()){
+            this.core.disableHighlight(highlightRelated);
         }
     }
 
@@ -165,7 +154,7 @@ export default class {
      * @returns {boolean}
      */
     isSpecial(){
-        return this.type.kind === 'special';
+        return this.getTypeKind() === 'special';
     }
 
     /**
@@ -173,7 +162,7 @@ export default class {
      * @returns {boolean}
      */
     isFigure(){
-        return this.type.kind === 'figure';
+        return this.getTypeKind() === 'figure';
     }
 
     /**
@@ -181,7 +170,7 @@ export default class {
      * @returns {boolean}
      */
     isLine(){
-        return this.type.kind === 'line';
+        return this.getTypeKind() === 'line';
     }
 
     /**
@@ -205,7 +194,7 @@ export default class {
      * @returns {*}
      */
     getTypeKind(){
-        return this.kind;
+        return this.type.kind;
     }
 
     /**
