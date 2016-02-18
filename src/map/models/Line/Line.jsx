@@ -64,8 +64,9 @@ export default class extends AbstractElement {
              * Рисуем линию в виде трубки
              */
 
-                //Инче создаем новую
+            //Инче создаем новую
             this.mesh = BABYLON.Mesh.CreateTube("lines", linePositions, this.tubeRadius, 3, null, 0, this.Map.scene, true);
+            this.mesh.freezeNormals();
 
             //Рисуем линию в виде нитки
             this.line = BABYLON.Mesh.CreateLines("lines", linePositions, this.Map.scene, true);
@@ -97,9 +98,15 @@ export default class extends AbstractElement {
      * @param isAbsolutePosition
      */
     initPointMesh(position, parentElement, isAbsolutePosition = true) {
-        let point = BABYLON.Mesh.CreateSphere('linePoint', 10, this.pointMeshSize, this.Map.scene);
+        let point = BABYLON.Mesh.CreateSphere('linePoint', 10, this.pointMeshSize, this.Map.scene, false, BABYLON.Mesh.FRONTSIDE);
         point.material = new BABYLON.StandardMaterial('material', this.Map.scene);
-        point.material.diffuseColor = new BABYLON.Color3(1, 1, 0);
+        point.material.diffuseColor = new BABYLON.Color3.Yellow();
+
+        //Материал не реагирует на свет
+        point.material.emissiveColor = BABYLON.Color3.White();
+        point.material.linkEmissiveWithDiffuse = true;
+
+        //Материал прозрачен
         point.material.alpha = 0.5;
         point.element = this;
 
@@ -256,8 +263,10 @@ export default class extends AbstractElement {
         }
     }
 
+    /**
+     * Покадровое обновление элемента
+     */
     update() {
-
         //Перестраиваем положение линии в зависимости от положения опорных точек
         this.updateLinePositions();
 

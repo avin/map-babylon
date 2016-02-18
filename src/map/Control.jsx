@@ -95,7 +95,7 @@ export default class {
             let cameraPositionY = this.playerCamera.position.y;
 
             //Только если камера в режиме управления
-            if (this.Map.scene.activeCamera._attachedElement) {
+            if (this.Map.playerCamera._attachedElement) {
 
                 //Передвижение камеры вверх
                 if (this.keyStates.up == 1) {
@@ -116,9 +116,9 @@ export default class {
              */
 
             //Только если камера в режиме управления
-            if (this.Map.scene.activeCamera._attachedElement) {
+            if (this.Map.playerCamera._attachedElement) {
                 //Удаляем элемент
-                if (this.keyStates.delete == 1) {
+                if (this.keyStates.delete) {
                     this.deleteElement();
                 }
             }
@@ -170,7 +170,7 @@ export default class {
     }
 
     /**
-     * Координатор обработчика событый: Любое кнопка мыши отжата
+     * Координатор обработчика событый: Любая кнопка мыши отжата
      * @param event
      */
     onPointerUp(event) {
@@ -299,7 +299,7 @@ export default class {
                             }
                         }
 
-                        //Только элементы на которых можно монтировать
+                        //Только элементы на которые можно монтировать
                         return this.currentElement.canBeMountedOn(mesh.element);
                     }, false, camera);
 
@@ -328,7 +328,7 @@ export default class {
                 {
                     let pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
 
-                        //Только элементы к которым можно вязаться
+                        //Только элементы на которые можно монтировать
                         return this.currentElement.canBeMountedOn(mesh.element);
                     }, false, camera);
 
@@ -345,9 +345,8 @@ export default class {
             }
         }
 
-        //Если выбран режим APPEND
         if (this.mode === CONTROL_MODES.APPEND) {
-            //И выбрана фигура для дополнения
+
             if (this.currentElement) {
 
                 switch (this.currentElement.getTypeKind()) {
@@ -411,13 +410,13 @@ export default class {
             switch (this.currentElement.getTypeKind()) {
                 case 'line':
                 {
-                    //Проверяем если ткнули в точку излома линии
+                    //Проверяем если попали в опорную точку линии
                     pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
                         return _.includes(this.currentElement.pointMeshes, mesh);
                     }, false, this.Map.playerCamera);
 
-                    //Если попали в излома
                     if (pickInfo.hit) {
+                        //Назначаем опорную точку фигурой управления
                         this.setCurrentControlMesh(pickInfo.pickedMesh);
                     }
 
@@ -425,12 +424,11 @@ export default class {
                 }
                 case 'figure':
                 {
-                    //Проверяем если ткнули в фигуру управления
+                    //Проверяем если попали в фигуру управления
                     pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
                         return _.includes(this.controlMeshes, mesh);
                     }, false, this.Map.playerCamera);
 
-                    //Если попали в фигуру управления
                     if (pickInfo.hit) {
                         //Назначаем текущую фигуру управления
                         this.setCurrentControlMesh(pickInfo.pickedMesh);
@@ -493,7 +491,7 @@ export default class {
                         case 'line':
                         {
                             /**
-                             * Если попали в колено - завершаем построение линии
+                             * Если попали в опорную точку - завершаем построение линии
                              */
 
                             pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
@@ -519,11 +517,8 @@ export default class {
                              */
 
                             pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
-                                //Только элементы к которым можно вязаться
+                                //Только элементы на которые можно монтировать
                                 return this.currentElement.canBeMountedOn(mesh.element);
-
-                                //Только обычные элементы
-                                //return _.includes(this.Map.elements, mesh.element);
                             }, false, this.Map.playerCamera);
 
                             if (pickInfo.hit) {
@@ -562,8 +557,8 @@ export default class {
 
                 }, false, this.Map.playerCamera);
 
-                //Если во что-то попали
                 if (pickInfo.hit) {
+                    //Назначаем выбранный элемент активным
                     this.setCurrentElement(pickInfo.pickedMesh.element)
                 }
             }
@@ -572,6 +567,7 @@ export default class {
         //Убираем вспомогательную плоскость
         this.destroySupportPlane();
 
+        //Убираем текущие фигуры управления
         this.unsetCurrentControlMesh();
 
         //Сохраняем состояние элемента после действия
@@ -637,12 +633,12 @@ export default class {
      * @param rotation
      */
     createSupportPlane(parentMesh, rotation) {
-        //Если уже назначена вспомогательная плоскость - убираем старую
+        //Если уже назначена вспомогательная плоскость - убираем её
         if (this.supportPlane) {
             this.destroySupportPlane();
         }
 
-        this.supportPlane = BABYLON.Mesh.CreatePlane("supportPlane", 100.0, this.Map.scene, true, BABYLON.Mesh.FRONTSIDE);
+        this.supportPlane = BABYLON.Mesh.CreatePlane("supportPlane", 100.0, this.Map.scene, false, BABYLON.Mesh.FRONTSIDE);
 
         //Настройка материала плоскости (используется для дебага)
         this.supportPlane.material = new BABYLON.StandardMaterial('mat', this.Map.scene);
@@ -650,10 +646,13 @@ export default class {
         this.supportPlane.material.alpha = 0.3;
         this.supportPlane.material.backFaceCulling = false;
 
+        //Плоскость не видна пользователю
         this.supportPlane.isVisible = false;
 
-        //Привязываем позицию к позиции контрольной фигуры
+        //Привязываем позицию плоскости к позиции фигуры управления
         this.supportPlane.position = parentMesh.absolutePosition;
+
+        //Если было указано вращение плоскости
         if (rotation) {
             this.supportPlane.rotation = rotation;
         }
@@ -661,15 +660,17 @@ export default class {
         //Сохраняем "нулевую" точку на вспомогательной плоскости
         this.supportPlane.zeroPoint = parentMesh.getAbsolutePosition().clone();
 
-        //Если было указано вращение плоскости
+        /**
+         * Сохраняем координату указателя на плоскости (до и после вращения - это важно!)
+         */
 
-        //После того как матрица вспомогательной плоскости обновится после вращения
+        //Сейчас
+        this.supportPlane.startPoint = this.getPointOnSupportPlane();
+
+        //И после того как матрица вспомогательной плоскости обновится после вращения
         this.supportPlane.registerAfterWorldMatrixUpdate(() => {
-            //Сохраняем координату указателя на плоскости
             this.supportPlane.startPoint = this.getPointOnSupportPlane();
         });
-
-        this.supportPlane.startPoint = this.getPointOnSupportPlane();
     }
 
     /**
@@ -758,13 +759,11 @@ export default class {
      */
     colorMountCompatibleElements() {
         _.each(this.Map.elements, (element) => {
-            //if (!_.eq(this.currentElement, element)) {
-                if (this.currentElement.canBeMountedOn(element)) {
-                    element.colorMountCompatible();
-                } else {
-                    element.colorMountIncompatible();
-                }
-            //}
+            if (this.currentElement.canBeMountedOn(element)) {
+                element.colorMountCompatible();
+            } else {
+                element.colorMountIncompatible();
+            }
         })
     }
 
@@ -826,13 +825,13 @@ export default class {
                 {
                     //Вешаем на элемент инструменты редактирования в зависимости от выбранного режима редактирования
                     switch (this.mode) {
-                        case 1:
+                        case CONTROL_MODES.MOVE:
                             this.showMoveAxis();
                             break;
-                        case 2:
+                        case CONTROL_MODES.ROTATE:
                             this.showRotateAxis();
                             break;
-                        case 3:
+                        case CONTROL_MODES.DRAG:
                             this.showDragCursor();
                             break;
                     }
@@ -921,6 +920,8 @@ export default class {
 
         //Добавляем фигуры редактирования в массив объекта для последующей манипуляции с ними
         this.controlMeshes.push(xBox, yBox, zBox);
+
+        //Элементы управления не видны на миникарте
         _.each(this.controlMeshes, (mesh) => {
             mesh.renderingGroupId = 1;
         })
@@ -990,6 +991,8 @@ export default class {
 
         //Добавляем фигуры редактирования в массив объекта для последующей манипуляции с ними
         this.controlMeshes.push(arcXY, arcXZ, arcZY);
+
+        //Элементы управления не видны на миникарте
         _.each(this.controlMeshes, (mesh) => {
             mesh.renderingGroupId = 1;
         })
@@ -1005,15 +1008,22 @@ export default class {
         let size = 2;
 
         //Создаем фигуру
-        let dragCursor = BABYLON.Mesh.CreateSphere("dragCursor", 5, size / 5, scene);
+        let dragCursor = BABYLON.Mesh.CreateSphere("dragCursor", 5, size / 5, scene, false, BABYLON.Mesh.FRONTSIDE);
         dragCursor.position = mesh.absolutePosition;
         let dragCursorMaterial = new BABYLON.StandardMaterial("dragCursorMaterial", scene);
         dragCursorMaterial.diffuseColor = BABYLON.Color3.Red();
+
+        //Материал не реагирует на свет
+        dragCursorMaterial.emissiveColor = BABYLON.Color3.White();
+        dragCursorMaterial.linkEmissiveWithDiffuse = true;
+
         dragCursorMaterial.alpha = 0.6;
         dragCursor.material = dragCursorMaterial;
 
         //Добавляем фигуры редактирования в массив объекта для последующей манипуляции с ними
         this.controlMeshes.push(dragCursor);
+
+        //Элементы управления не видны на миникарте
         _.each(this.controlMeshes, (mesh) => {
             mesh.renderingGroupId = 1;
         })
@@ -1060,7 +1070,7 @@ export default class {
 
         //Меняем размер фигур управления в зависимости от удаленности камеры
         _.each(this.controlMeshes, (mesh) => {
-            let scale = BABYLON.Vector3.Distance(this.Map.playerCamera.position, this.currentElement.mesh.position) / 10;
+            let scale = BABYLON.Vector3.Distance(this.Map.playerCamera.position, this.currentElement.mesh.position) / 15;
             mesh.scaling = new BABYLON.Vector3(scale, scale, scale);
         })
 

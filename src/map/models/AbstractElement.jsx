@@ -230,7 +230,7 @@ export default class Abstract {
      * @returns {*|BABYLON.Color3.FromInts}
      */
     setMaterial(specialColor) {
-        let typeStyleColor = specialColor ? specialColor : colorHelper.hexColorToBabylonColor3(_.get(this.getType(), 'style.color', '#FFFFFF'));;
+        let typeStyleColor = specialColor ? specialColor : colorHelper.hexColorToBabylonColor3(_.get(this.getType(), 'style.color', '#FFFFFF'));
 
         if (this.mesh){
             //Если фигура является инстансом - работаем с исходной фигурой
