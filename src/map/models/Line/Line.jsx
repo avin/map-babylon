@@ -250,9 +250,9 @@ export default class extends AbstractElement {
         }
     }
 
-    setMaterial(){
+    setMaterial(specialColor){
         if(this.line){
-            this.line.color = super.setMaterial();
+            this.line.color = super.setMaterial(specialColor);
         }
     }
 

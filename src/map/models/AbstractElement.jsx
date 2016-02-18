@@ -229,8 +229,8 @@ export default class Abstract {
      * Назначить фигуре материал
      * @returns {*|BABYLON.Color3.FromInts}
      */
-    setMaterial() {
-        let typeStyleColor = colorHelper.hexColorToBabylonColor3(_.get(this.getType(), 'style.color', '#FFFFFF'));
+    setMaterial(specialColor) {
+        let typeStyleColor = specialColor ? specialColor : colorHelper.hexColorToBabylonColor3(_.get(this.getType(), 'style.color', '#FFFFFF'));;
 
         if (this.mesh){
             //Если фигура является инстансом - работаем с исходной фигурой
@@ -245,6 +245,30 @@ export default class Abstract {
         }
 
         return typeStyleColor;
+    }
+
+    /**
+     * Подкрасить как совместимый для монтирования
+     */
+    colorMountCompatible(){
+        this.setMaterial(new BABYLON.Color3(0,1,0));
+        this.setVisibility(this.visibility);
+    }
+
+    /**
+     * Подкрасить как несовместимый для монтирования
+     */
+    colorMountIncompatible(){
+        this.setMaterial(new BABYLON.Color3(1,1,1));
+        this.setVisibility(this.visibility);
+    }
+
+    /**
+     * Убрать подкрашивание
+     */
+    unColor(){
+        this.setMaterial();
+        this.setVisibility(this.visibility);
     }
 
 }

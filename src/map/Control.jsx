@@ -23,7 +23,7 @@ export default class {
         };
 
         //Режим редактирования элемента
-        this.setMode(CONTROL_MODES.MOVE);
+        this.setMode(CONTROL_MODES.DRAG);
 
         //Выбранный элемент который редактируем
         this.currentElement = null;
@@ -196,7 +196,7 @@ export default class {
         let camera = this.Map.playerCamera;
 
         //Если выбрана фигура управления
-        if (this.currentControlMesh) {
+        if (this.currentControlMesh && this.currentElement) {
 
             switch (this.currentControlMesh.name) {
                 case 'editX':
@@ -284,7 +284,6 @@ export default class {
 
                     break;
                 }
-
                 case 'dragCursor':
                 {
                     let pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
@@ -300,8 +299,8 @@ export default class {
                             }
                         }
 
-                        //Только обычные элементы
-                        return _.includes(this.Map.elements, mesh.element);
+                        //Только элементы на которых можно монтировать
+                        return this.currentElement.canBeMountedOn(mesh.element);
                     }, false, camera);
 
                     if (pickInfo.hit) {
@@ -331,8 +330,6 @@ export default class {
 
                         //Только элементы к которым можно вязаться
                         return this.currentElement.canBeMountedOn(mesh.element);
-
-                        //return _.includes(this.Map.elements, mesh.element);
                     }, false, camera);
 
                     if (pickInfo.hit) {
@@ -371,10 +368,8 @@ export default class {
                                 return false;
                             }
 
-                            //Только элементы системы на которых можнно монтировать
+                            //Только элементы на которых можно монтировать
                             return this.currentElement.canBeMountedOn(mesh.element);
-
-                            //return _.includes(this.Map.elements, mesh.element);
                         }, false, camera);
 
                         if (pickInfo.hit) {
@@ -473,7 +468,7 @@ export default class {
 
         if (this.currentElement) {
             //Сохраняем состояние элемента до действия
-            this.undoItemId = this.Map.undoStack.initUndoItem(this.currentElement);
+            //this.undoItemId = this.Map.undoStack.initUndoItem(this.currentElement);
         }
     }
 
@@ -510,8 +505,10 @@ export default class {
                                 //Добавляем элемент в общую базу элементов
                                 this.Map.elements.push(this.currentElement);
 
+                                this.unsetCurrentElement();
+
                                 //Выходим из режима редактирования
-                                this.setMode(0);
+                                this.setMode(CONTROL_MODES.DRAG);
 
                                 //Выходим из обработчика
                                 return;
@@ -538,8 +535,11 @@ export default class {
                         }
                         case 'figure':
                         {
+                            this.unsetCurrentControlMesh();
+                            this.unsetCurrentElement();
+
                             //Выходим из режима редактирования
-                            this.setMode(0);
+                            this.setMode(CONTROL_MODES.DRAG);
 
                             //Выходим из обработчика
                             break;
@@ -577,10 +577,10 @@ export default class {
         //Сохраняем состояние элемента после действия
         if (this.currentElement) {
             //Сохраняем состояние элемента после действия
-            if (this.undoItemId !== null) {
-                this.undoItemId = this.Map.undoStack.fillUndoItem(this.undoItemId, 'edit');
-                this.undoItemId = null;
-            }
+            //if (this.undoItemId !== null) {
+            //    this.undoItemId = this.Map.undoStack.fillUndoItem(this.undoItemId, 'edit');
+            //    this.undoItemId = null;
+            //}
         }
     }
 
@@ -716,7 +716,15 @@ export default class {
 
         //Если выбран тот же элемент - выходим
         if (_.eq(this.currentElement, element)) {
-            this.currentElement = null;
+            this.unsetCurrentElement();
+            return;
+        }
+
+        //Убираем старый выбранный элемент
+        this.unsetCurrentElement();
+
+        //Специальный элемент не может быть выбран
+        if (element.isSpecial()) {
             return;
         }
 
@@ -725,7 +733,48 @@ export default class {
         //Подсвечиваем активный элемент
         this.currentElement.enableHighlight(true);
 
+        //Показывем элементы выбранного управления элемента
         this.showControl();
+
+        //Подсвечиваем элементы на которых можно смотнировать выбранный элемент
+        this.colorMountCompatibleElements();
+    }
+
+    /**
+     * Снять назначение с текущего изменяемого элемента
+     */
+    unsetCurrentElement() {
+        if (this.currentElement) {
+            this.currentElement.disableHighlight(true);
+
+            this.currentElement = null;
+        }
+
+        this.unColorMountCompatibleElements();
+    }
+
+    /**
+     * Подсветить элементы на которые можно смонтировать
+     */
+    colorMountCompatibleElements() {
+        _.each(this.Map.elements, (element) => {
+            //if (!_.eq(this.currentElement, element)) {
+                if (this.currentElement.canBeMountedOn(element)) {
+                    element.colorMountCompatible();
+                } else {
+                    element.colorMountIncompatible();
+                }
+            //}
+        })
+    }
+
+    /**
+     * Снять подсветку возможности монтировать
+     */
+    unColorMountCompatibleElements() {
+        _.each(this.Map.elements, (element) => {
+            element.unColor();
+        })
     }
 
     /**
