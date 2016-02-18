@@ -1,11 +1,14 @@
-import ElementCore from '../ElementCore';
+import Element from '../Element';
 
-export default class extends ElementCore {
+export default class extends Element {
 
-    constructor(Element) {
-        super(Element);
+    constructor(Map, elementData) {
+        super(Map, elementData);
 
+        //Размер опорной точки
         this.pointMeshSize = 0.3;
+
+        //Размер трубы
         this.tubeRadius = this.pointMeshSize / 3;
 
         //Точки окончаний и изгибов
@@ -15,7 +18,7 @@ export default class extends ElementCore {
     }
 
     _init() {
-        let coordinates = this.Element.data.coordinates;
+        let coordinates = _.get(this.data, 'coordinates', []);
 
         //Инициализируем фигуры точек изгибов
         _.each(coordinates, (coordinate) => {
@@ -36,14 +39,16 @@ export default class extends ElementCore {
         });
 
         this.drawLine();
+
+        super._init();
     }
 
     /**
      * Нарисовать/Перерисовать линию
      */
     drawLine() {
-        if (this.Element.mesh) {
-            this.Element.mesh.dispose();
+        if (this.mesh) {
+            this.mesh.dispose();
         }
 
         //Рисуем линию только если кол-во секции больше нуля
@@ -60,16 +65,16 @@ export default class extends ElementCore {
              */
 
                 //Инче создаем новую
-            this.Element.mesh = BABYLON.Mesh.CreateTube("lines", linePositions, this.tubeRadius, 3, null, 0, this.Map.scene, true);
+            this.mesh = BABYLON.Mesh.CreateTube("lines", linePositions, this.tubeRadius, 3, null, 0, this.Map.scene, true);
 
             //Рисуем линию в виде нитки
-            this.Element.line = BABYLON.Mesh.CreateLines("lines", linePositions, this.Map.scene, true);
+            this.line = BABYLON.Mesh.CreateLines("lines", linePositions, this.Map.scene, true);
 
             this.setMaterial();
 
             //Оставляем в mesh-e сслыку на родительский объект
-            if (this.Element.mesh) {
-                this.Element.mesh.element = this.Element;
+            if (this.mesh) {
+                this.mesh.element = this;
             }
         }
     }
@@ -96,7 +101,7 @@ export default class extends ElementCore {
         point.material = new BABYLON.StandardMaterial('material', this.Map.scene);
         point.material.diffuseColor = new BABYLON.Color3(1, 1, 0);
         point.material.alpha = 0.5;
-        point.element = this.Element;
+        point.element = this;
 
         this.setPointMeshParentElement(point, parentElement);
 
@@ -155,8 +160,9 @@ export default class extends ElementCore {
         highlightMaterial.diffuseColor = new BABYLON.Color3(0, 1, 1);
 
         //Назначаем материал подсветки на фигуру
-        this.Element.mesh.material = highlightMaterial;
+        this.mesh.material = highlightMaterial;
 
+        //Показываем опорные точки
         this.showPointMeshes();
     }
 
@@ -164,9 +170,10 @@ export default class extends ElementCore {
      * Убрать подсветку
      */
     disableHighlight(highlightRelated = false) {
-        //Возвращаем оригинальный материал
+        //Выставляем оригинальный материал
         this.setMaterial();
 
+        //Прячем опорные точки
         this.hidePointMeshes();
     }
 
@@ -176,12 +183,14 @@ export default class extends ElementCore {
     setVisibilityNormal(){
         super.setVisibilityNormal();
 
-        if (this.Element.mesh){
-            this.Element.mesh.visibility = 1;
+        //Показываем трубку
+        if (this.mesh){
+            this.mesh.visibility = 1;
         }
 
-        if (this.Element.line){
-            this.Element.line.visibility = 0;
+        //Прячем линию
+        if (this.line){
+            this.line.visibility = 0;
         }
     }
 
@@ -191,12 +200,14 @@ export default class extends ElementCore {
     setVisibilityTransparent(){
         super.setVisibilityTransparent();
 
-        if (this.Element.mesh){
-            this.Element.mesh.visibility = 0;
+        //Прячем трубку
+        if (this.mesh){
+            this.mesh.visibility = 0;
         }
 
-        if (this.Element.line){
-            this.Element.line.visibility = 1;
+        //Показываем линию
+        if (this.line){
+            this.line.visibility = 1;
         }
     }
 
@@ -206,12 +217,14 @@ export default class extends ElementCore {
     setVisibilityHidden(){
         super.setVisibilityHidden();
 
-        if (this.Element.mesh){
-            this.Element.mesh.visibility = 0;
+        //Прямчем трубку
+        if (this.mesh){
+            this.mesh.visibility = 0;
         }
 
-        if (this.Element.line){
-            this.Element.line.visibility = 0;
+        //Прямчем линию
+        if (this.line){
+            this.line.visibility = 0;
         }
     }
 
@@ -224,14 +237,19 @@ export default class extends ElementCore {
             return (pointMesh.getAbsolutePosition());
         });
 
-        this.Element.mesh = BABYLON.Mesh.CreateTube(null, linePositions, 0.05, null, null, null, null, null, null, this.Element.mesh);
+        //Если есть хотябы один прямой участок на линии
+        if (this.getSectionsCount() > 0){
 
-        //Рисуем линию в виде нитки
-        this.Element.line = BABYLON.Mesh.CreateLines(null, linePositions, null, null, this.Element.line);
+            //Обновляем трубку
+            this.mesh = BABYLON.Mesh.CreateTube(null, linePositions, 0.05, null, null, null, null, null, null, this.mesh);
+
+            //Обновляем нитку
+            this.line = BABYLON.Mesh.CreateLines(null, linePositions, null, null, this.line);
+        }
     }
 
     setMaterial(){
-        this.Element.line.color = super.setMaterial();
+        this.line.color = super.setMaterial();
     }
 
     update() {

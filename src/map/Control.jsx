@@ -338,7 +338,7 @@ export default class {
                     if (pickInfo.hit) {
 
                         //Привязываем опорную точку к элементу на который перемещаем
-                        this.currentElement.core.setPointMeshParentElement(this.currentControlMesh, pickInfo.pickedMesh.element);
+                        this.currentElement.setPointMeshParentElement(this.currentControlMesh, pickInfo.pickedMesh.element);
 
                         //Меняем положение опорной точки
                         this.currentControlMesh.setAbsolutePosition(pickInfo.pickedPoint);
@@ -418,7 +418,7 @@ export default class {
                 {
                     //Проверяем если ткнули в точку излома линии
                     pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
-                        return _.includes(this.currentElement.core.pointMeshes, mesh);
+                        return _.includes(this.currentElement.pointMeshes, mesh);
                     }, false, this.Map.playerCamera);
 
                     //Если попали в излома
@@ -502,7 +502,7 @@ export default class {
                              */
 
                             pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
-                                return _.includes(this.Map.appendingElement.core.pointMeshes, mesh);
+                                return _.includes(this.Map.appendingElement.pointMeshes, mesh);
                             }, false, this.Map.playerCamera);
 
                             if (pickInfo.hit) {
@@ -531,7 +531,7 @@ export default class {
 
                             if (pickInfo.hit) {
                                 //Добавляем точку в линию
-                                this.Map.appendingElement.core.addPoint(pickInfo.pickedPoint, pickInfo.pickedMesh.element, true);
+                                this.Map.appendingElement.addPoint(pickInfo.pickedPoint, pickInfo.pickedMesh.element, true);
                             }
 
                             break;

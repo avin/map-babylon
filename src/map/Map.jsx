@@ -1,5 +1,4 @@
 import _ from 'lodash'
-
 import playerCamera from './scene/playerCamera';
 import miniMapCamera from './scene/miniMapCamera';
 import mainLight from './scene/mainLight';
@@ -7,13 +6,13 @@ import cameraLight from './scene/cameraLight';
 import filter from './scene/filter';
 import Control from './Control';
 import UndoStack from './UndoStack';
+import ElementDispatcher from './models/ElementDispatcher';
 
+import {CONTROL_MODES} from '../constants'
 
-import Element from './models/Element'
-
+//Импорт данных
 import typeCatalog from '../data/type_catalog.json'
 import elementCatalog from '../data/element_catalog.json'
-
 
 export default class {
 
@@ -34,6 +33,8 @@ export default class {
         this.typeCatalog = _.keyBy(typeCatalog, '_id');
         this.elementCatalog = _.keyBy(elementCatalog, '_id');
 
+        this.elementDispatcher = new ElementDispatcher(this);
+
         this.elements = [];
 
         //Определения стека отмены действий
@@ -45,7 +46,6 @@ export default class {
         window.addEventListener("resize", () => {
             this.engine.resize();
         });
-
 
         this._init();
     }
@@ -73,7 +73,6 @@ export default class {
                 };
             }
         });
-
 
         loader.onFinish = () => {
 
@@ -133,7 +132,7 @@ export default class {
 
         //Расставляем все элементы из базы элементов
         _.each(this.elementCatalog, (elementData) => {
-            this.elements.push(new Element(this, elementData));
+            this.elementDispatcher.createElement(elementData);
         });
 
         this.scene.beforeRender = () => {
@@ -256,15 +255,15 @@ export default class {
      * Добавить элемент на карту
      * @param elementType
      */
-    appendElement(elementType){
+    appendElement(elementType) {
 
         //Если мы уже в режиме добавления
-        if (this.control.mode === 4){
+        if (this.control.mode === CONTROL_MODES.APPEND) {
             //Убираем текущий элемент для дополнения
             this.appendingElement.remove();
         }
 
-        this.setControlMode(4); //APPEND
+        this.setControlMode(CONTROL_MODES.APPEND);
 
         let newElementData = {
             "_id": 4,
@@ -288,7 +287,6 @@ export default class {
             "states": []
         };
 
-
-        this.appendingElement = new Element(this, newElementData);
+        this.appendingElement = this.elementDispatcher.createElement(newElementData);
     }
 }

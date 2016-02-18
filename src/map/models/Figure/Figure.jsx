@@ -1,43 +1,47 @@
-import ElementCore from '../ElementCore';
+import Element from '../Element';
 
-export default class extends ElementCore {
+export default class extends Element {
 
-    constructor(Element) {
-        super(Element);
+    constructor(Map, elementData) {
+        super(Map, elementData);
 
-        this._init()
+        this._init();
     }
 
     _init() {
-        if (this.Element.data.custom_model) {
+        if (this.data.custom_model) {
             //Если у элемента индивидуальная модель
             //TODO
         } else {
             //Иначе используем модель типа
-            if (this.Element.type.default_model) {
+            if (this.type.default_model) {
                 //Только если модель для данного типа загружена
-                this.Element.mesh = this.Map.models[this.Element.type.default_model].createInstance(this._id);
-                this.Element.mesh.scaling = new BABYLON.Vector3(1, 1, 1);
+                this.mesh = this.Map.models[this.type.default_model].createInstance(this._id);
+                this.mesh.scaling = new BABYLON.Vector3(1, 1, 1);
 
-                let elementPosition = this.Element.data.location.position;
-                this.Element.mesh.position = new BABYLON.Vector3(elementPosition.x, elementPosition.y, elementPosition.z);
+                let elementPosition = this.data.location.position;
+                this.mesh.position = new BABYLON.Vector3(elementPosition.x, elementPosition.y, elementPosition.z);
             }
         }
 
         this.setMaterial();
+
+        super._init();
     }
 
     /**
      * Подсветить элемент
      */
     enableHighlight(highlightRelated = false){
-        this.Element.mesh.showBoundingBox = true;
+        super.enableHighlight();
+
+        this.mesh.showBoundingBox = true;
         //Если подсвечивать родственные элементы
         if (highlightRelated){
 
             //Обходим элементы системы в поисках потомков
             _.each(this.Map.elements, (element) => {
-                if (_.eq(element.parent, this.Element)){
+                if (_.eq(element.parent, this)){
                     //И подсвечиваем их и их потомков
                     element.enableHighlight(true);
                 }
@@ -49,13 +53,15 @@ export default class extends ElementCore {
      * Убрать подсветку
      */
     disableHighlight(highlightRelated = false){
+        super.disableHighlight();
+
         //Если подсвечены родственные элементе - обходим все элементы системы
         if (highlightRelated){
             _.each(this.Map.elements, (element) => {
                 element.disableHighlight();
             });
         } else {
-            this.Element.mesh.showBoundingBox = false;
+            this.mesh.showBoundingBox = false;
         }
     }
 
@@ -65,7 +71,7 @@ export default class extends ElementCore {
     setVisibilityNormal(){
         super.setVisibilityNormal();
 
-        let mesh = this.Element.mesh.sourceMesh || this.Element.mesh;
+        let mesh = this.mesh.sourceMesh || this.mesh;
 
         mesh.visibility = 1;
         mesh.material.alpha = 1;
@@ -77,7 +83,7 @@ export default class extends ElementCore {
     setVisibilityTransparent(){
         super.setVisibilityTransparent();
 
-        let mesh = this.Element.mesh.sourceMesh || this.Element.mesh;
+        let mesh = this.mesh.sourceMesh || this.mesh;
 
         mesh.visibility = 1;
         mesh.material.alpha = 0.3;
@@ -89,7 +95,7 @@ export default class extends ElementCore {
     setVisibilityHidden(){
         super.setVisibilityHidden();
 
-        let mesh = this.Element.mesh.sourceMesh || this.Element.mesh;
+        let mesh = this.mesh.sourceMesh || this.mesh;
 
         mesh.visibility = 0;
         mesh.material.alpha = 1;

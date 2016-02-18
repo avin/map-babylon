@@ -1,119 +1,105 @@
-import Ground from './Special/Ground'
-import Sky from './Special/Sky'
-import Figure from './Figure/Figure'
-import Line from './Line/Line'
+import colorHelper from '../Helpers/color'
+
 import {VISIBILITY} from '../../constants'
 
 export default class {
 
-    constructor(Map, element) {
+    constructor(Map, elementData) {
         this.Map = Map;
-        this._id = element._id;
-        this.data = element;
-        this.type = Map.typeCatalog[this.data.type_id];
+        this.data = elementData;
+        this._id = elementData._id;
+        this.type = this.Map.typeCatalog[this.data.type_id];
 
         this.mesh = null; //Фигура элемента
-        this.core = null; //Объект описывающий логику элемента
+
+        //Флаг подсветки элемента
+        this.highlighted = false;
 
         this.history = [];
-
-        this._init();
     }
 
+    /**
+     * Инициализация объекта
+     * @private
+     */
     _init() {
-        switch (this.type.kind){
-            case 'special':
-                switch (this.type.code_class){
-                    case 'sky':
-                        this.core = new Sky(this, {});
-                        break;
-
-                    case 'ground':
-                        this.core = new Ground(this, {});
-                        break;
-                }
-                break;
-
-            case 'figure':
-                this.core = new Figure(this);
-                break;
-
-            case 'line':
-                this.core = new Line(this);
-                break;
-        }
-
-        //По умолчанию нормальные режим отображения
-        this.core.setVisibilityNormal();
+        //Выставить режим отображения фигуры по умолчанию
+        this.setVisibilityDefault();
 
         //Оставляем в mesh-e сслыку на родительский объект
-        if (this.mesh){
+        if (this.mesh) {
             this.mesh.element = this;
         }
     }
 
     /**
+     * Выставить режим отображения по умолчанию
+     */
+    setVisibilityDefault() {
+        //По умолчанию элемент отображается нормально
+        this.setVisibilityNormal();
+    }
+
+    /**
      * Подсветить элемент
      */
-    enableHighlight(highlightRelated = false){
-        //Только для обычных элементов
-        if (!this.isSpecial()){
-            this.core.enableHighlight(highlightRelated);
-        }
-
+    enableHighlight(highlightRelated = false) {
+        this.highlighted = true;
     }
 
     /**
      * Убрать подсветку
      */
-    disableHighlight(highlightRelated = false){
-        //Только для обычных элементов
-        if (!this.isSpecial()){
-            this.core.disableHighlight(highlightRelated);
-        }
+    disableHighlight(highlightRelated = false) {
+        this.highlighted = false;
     }
-
 
     /**
      * Выставить режим отобращения элемента
      * @param visibility
      */
-    setVisibility(visibility){
-        switch (visibility){
+    setVisibility(visibility) {
+        switch (visibility) {
             case VISIBILITY.NORMAL:
-                this.core.setVisibilityNormal();
+                this.setVisibilityNormal();
                 break;
             case VISIBILITY.TRANSPARENT:
-                this.core.setVisibilityTransparent();
+                this.setVisibilityTransparent();
                 break;
             case VISIBILITY.HIDDEN:
-                this.core.setVisibilityHidden();
+                this.setVisibilityHidden();
                 break;
         }
     }
 
     /**
-     * Спрятать фигуру элемента на карте
+     * Выставить нормальный режим отображения для элемента
      */
-    hide(){
-        if (this.mesh.sourceMesh){
-            this.mesh.sourceMesh.visibility = 0;
-        } else {
-            this.mesh.visibility = 0;
-        }
+    setVisibilityNormal() {
+        this.visibility = VISIBILITY.NORMAL;
+    }
 
-        if (this.line){
-            this.line.visibility = 0;
-        }
+    /**
+     * Выставить прозрачный режим отображения для элемента
+     */
+    setVisibilityTransparent() {
+        this.visibility = VISIBILITY.TRANSPARENT;
+    }
+
+    /**
+     * Выставить скрытый режим отображения для элемента
+     */
+    setVisibilityHidden() {
+        this.visibility = VISIBILITY.HIDDEN;
     }
 
     /**
      * Назначить родительский элемент
      * @param parentElement
      */
-    setParent(parentElement){
+    setParent(parentElement) {
         //Только если не пытаемся привязать старого родителя
-        if (! _.eq(this.parent, parentElement)){
+        if (!_.eq(this.parent, parentElement)) {
 
             //Отвязываем родителя если пытаемся привязаться к "специальному" элементу
             if (parentElement.type.kind == 'special') {
@@ -131,9 +117,9 @@ export default class {
      * Проверка на родство во всём гендерном дереве
      * @param parentElement
      */
-    isChildOf(parentElement){
-        if (this.parent){
-            if (_.eq(this.parent, parentElement)){
+    isChildOf(parentElement) {
+        if (this.parent) {
+            if (_.eq(this.parent, parentElement)) {
                 return true;
             } else {
                 return this.parent.isChildOf(parentElement);
@@ -144,16 +130,16 @@ export default class {
     /**
      * Удалить элемент
      */
-    remove(){
+    remove() {
 
         //Удаляем саму фигуру элемента
-        if (this.mesh){
+        if (this.mesh) {
             this.mesh.dispose();
         }
 
         //Убиваем всех потомков элемента
         _.each(this.Map.elements, (element) => {
-            if (element){
+            if (element) {
                 if (element.isChildOf(this)) {
                     element.remove();
                 }
@@ -166,12 +152,11 @@ export default class {
         });
     }
 
-
     /**
      * Элемент является специальным элементом?
      * @returns {boolean}
      */
-    isSpecial(){
+    isSpecial() {
         return this.getTypeKind() === 'special';
     }
 
@@ -179,7 +164,7 @@ export default class {
      * Элемент является фигурой?
      * @returns {boolean}
      */
-    isFigure(){
+    isFigure() {
         return this.getTypeKind() === 'figure';
     }
 
@@ -187,7 +172,7 @@ export default class {
      * Элемент является линией?
      * @returns {boolean}
      */
-    isLine(){
+    isLine() {
         return this.getTypeKind() === 'line';
     }
 
@@ -195,7 +180,7 @@ export default class {
      * Получить родительскую разновидность
      * @returns {*}
      */
-    getType(){
+    getType() {
         return this.type;
     }
 
@@ -203,7 +188,7 @@ export default class {
      * Получить данные элемента
      * @returns {*}
      */
-    getData(){
+    getData() {
         return this.data;
     }
 
@@ -211,7 +196,7 @@ export default class {
      * Получить разновидность родителского типа
      * @returns {*}
      */
-    getTypeKind(){
+    getTypeKind() {
         return this.type.kind;
     }
 
@@ -219,8 +204,8 @@ export default class {
      * Может ли элемент быть смонтирован на указанном родителе
      * @param parentElement
      */
-    canBeMountedOn(parentElement){
-        if (parentElement){
+    canBeMountedOn(parentElement) {
+        if (parentElement) {
             let parentType = parentElement.getType();
             let ruleMountIds = _.get(this.type, 'rules.mount', []);
 
@@ -233,12 +218,26 @@ export default class {
      * @param delta
      * @param time
      */
-    update(delta, time){
-        //Если у элемента есть объект поведения
-        if (this.core){
-            if (_.isFunction(this.core.update)){
-                this.core.update(delta, time);
-            }
-        }
+    update(delta, time) {
     }
+
+    /**
+     * Назначить фигуре материал
+     * @returns {*|BABYLON.Color3.FromInts}
+     */
+    setMaterial() {
+        let mesh = this.mesh.sourceMesh ? this.mesh.sourceMesh : this.mesh;
+
+        mesh.material = new BABYLON.StandardMaterial('material', this.Map.scene);
+        mesh.material.glossiness = 0.2;
+        let typeStyleColor = colorHelper.hexColorToBabylonColor3(_.get(this.getType(), 'style.color', '#FFFFFF'));
+
+        mesh.material.diffuseColor = typeStyleColor;
+        mesh.material.specularColor = new BABYLON.Color4(0.3, 0.3, 0.3, 0.5);
+        mesh.material.useGlossinessFromSpecularMapAlpha = true;
+
+        return typeStyleColor;
+    }
+
+
 }
