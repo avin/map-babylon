@@ -1,6 +1,6 @@
-import Element from '../Element';
+import AbstractElement from '../AbstractElement';
 
-export default class extends Element {
+export default class extends AbstractElement {
 
     constructor(Map, elementData) {
         super(Map, elementData);

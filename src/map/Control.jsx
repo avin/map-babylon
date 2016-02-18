@@ -351,9 +351,9 @@ export default class {
         //Если выбран режим APPEND
         if (this.mode === CONTROL_MODES.APPEND) {
             //И выбрана фигура для дополнения
-            if (this.Map.appendingElement) {
+            if (this.currentElement) {
 
-                switch (this.Map.appendingElement.getTypeKind()) {
+                switch (this.currentElement.getTypeKind()) {
                     case 'line':
                     {
                         //ничего не делаем
@@ -367,12 +367,12 @@ export default class {
                          */
                         let pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
                             //Исключаем положение самой перетаскиваемой
-                            if (_.eq(mesh, this.Map.appendingElement.mesh)) {
+                            if (_.eq(mesh, this.currentElement.mesh)) {
                                 return false;
                             }
 
                             //Только элементы системы на которых можнно монтировать
-                            return this.Map.appendingElement.canBeMountedOn(mesh.element);
+                            return this.currentElement.canBeMountedOn(mesh.element);
 
                             //return _.includes(this.Map.elements, mesh.element);
                         }, false, camera);
@@ -380,10 +380,10 @@ export default class {
                         if (pickInfo.hit) {
 
                             //Назначем родителем элемента - элемент под ним
-                            this.Map.appendingElement.setParent(pickInfo.pickedMesh.element);
+                            this.currentElement.setParent(pickInfo.pickedMesh.element);
 
                             //Меняем положение фигуры и контрольного элемента
-                            this.Map.appendingElement.mesh.setAbsolutePosition(pickInfo.pickedPoint);
+                            this.currentElement.mesh.setAbsolutePosition(pickInfo.pickedPoint);
 
                             //Меняем вращение фигуры в зависимости от нормали фигуры на которую навели
                             let axis1 = pickInfo.getNormal();
@@ -393,7 +393,7 @@ export default class {
 
                             BABYLON.Vector3.CrossToRef(start, axis1, axis2);
                             BABYLON.Vector3.CrossToRef(axis2, axis1, axis3);
-                            this.Map.appendingElement.mesh.rotation = BABYLON.Vector3.RotationFromAxis(axis3.negate(), axis1, axis2);
+                            this.currentElement.mesh.rotation = BABYLON.Vector3.RotationFromAxis(axis3.negate(), axis1, axis2);
                         }
                         break;
                     }
@@ -488,13 +488,13 @@ export default class {
         this.endingMousePoint = {x: event.clientX, y: event.clientY};
 
         //Если находимся в режиме APPEND
-        if (this.mode === 4) {
+        if (this.mode === CONTROL_MODES.APPEND) {
             //И выбрана фигура для дополнения
-            if (this.Map.appendingElement) {
+            if (this.currentElement) {
                 //Если точка отжима такаяже как и клика - выбираем элемент под курсором
                 if (_.isEqual(this.startingMousePoint, this.endingMousePoint)) {
 
-                    switch (this.Map.appendingElement.getTypeKind()) {
+                    switch (this.currentElement.getTypeKind()) {
                         case 'line':
                         {
                             /**
@@ -502,13 +502,13 @@ export default class {
                              */
 
                             pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
-                                return _.includes(this.Map.appendingElement.pointMeshes, mesh);
+                                return _.includes(this.currentElement.pointMeshes, mesh);
                             }, false, this.Map.playerCamera);
 
                             if (pickInfo.hit) {
 
                                 //Добавляем элемент в общую базу элементов
-                                this.Map.elements.push(this.Map.appendingElement);
+                                this.Map.elements.push(this.currentElement);
 
                                 //Выходим из режима редактирования
                                 this.setMode(0);
@@ -523,7 +523,7 @@ export default class {
 
                             pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
                                 //Только элементы к которым можно вязаться
-                                return this.Map.appendingElement.canBeMountedOn(mesh.element);
+                                return this.currentElement.canBeMountedOn(mesh.element);
 
                                 //Только обычные элементы
                                 //return _.includes(this.Map.elements, mesh.element);
@@ -531,16 +531,13 @@ export default class {
 
                             if (pickInfo.hit) {
                                 //Добавляем точку в линию
-                                this.Map.appendingElement.addPoint(pickInfo.pickedPoint, pickInfo.pickedMesh.element, true);
+                                this.currentElement.addPoint(pickInfo.pickedPoint, pickInfo.pickedMesh.element, true);
                             }
 
                             break;
                         }
                         case 'figure':
                         {
-                            //Добавляем элемент в общую базу элементов
-                            this.Map.elements.push(this.Map.appendingElement);
-
                             //Выходим из режима редактирования
                             this.setMode(0);
 
@@ -635,34 +632,6 @@ export default class {
     }
 
     /**
-     * Назначить текущий редактируемый элемент
-     * @param element
-     */
-    setCurrentElement(element) {
-
-        //Убираем все элементы управления
-        this.hideControl();
-
-        //Отключаем подсветку для всех элементов
-        _.each(this.Map.elements, (element) => {
-            element.disableHighlight();
-        });
-
-        //Если выбран тот же элемент - выходим
-        if (_.eq(this.currentElement, element)) {
-            this.currentElement = null;
-            return;
-        }
-
-        this.currentElement = element;
-
-        //Подсвечиваем активный элемент
-        this.currentElement.enableHighlight(true);
-
-        this.showControl();
-    }
-
-    /**
      * Создать вспомогательную плоскость
      * @param parentMesh
      * @param rotation
@@ -729,6 +698,34 @@ export default class {
         }
 
         return null;
+    }
+
+    /**
+     * Назначить текущий редактируемый элемент
+     * @param element
+     */
+    setCurrentElement(element) {
+
+        //Убираем все элементы управления
+        this.hideControl();
+
+        //Отключаем подсветку для всех элементов
+        _.each(this.Map.elements, (element) => {
+            element.disableHighlight();
+        });
+
+        //Если выбран тот же элемент - выходим
+        if (_.eq(this.currentElement, element)) {
+            this.currentElement = null;
+            return;
+        }
+
+        this.currentElement = element;
+
+        //Подсвечиваем активный элемент
+        this.currentElement.enableHighlight(true);
+
+        this.showControl();
     }
 
     /**

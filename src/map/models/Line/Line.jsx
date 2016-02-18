@@ -1,6 +1,6 @@
-import Element from '../Element';
+import AbstractElement from '../AbstractElement';
 
-export default class extends Element {
+export default class extends AbstractElement {
 
     constructor(Map, elementData) {
         super(Map, elementData);
@@ -155,12 +155,14 @@ export default class extends Element {
      * Подсветить линию
      */
     enableHighlight() {
-        //Создаем новый материал для подсветки
-        let highlightMaterial = new BABYLON.StandardMaterial('mat', this.Map.scene);
-        highlightMaterial.diffuseColor = new BABYLON.Color3(0, 1, 1);
+        if (this.mesh){
+            //Создаем новый материал для подсветки
+            let highlightMaterial = new BABYLON.StandardMaterial('mat', this.Map.scene);
+            highlightMaterial.diffuseColor = new BABYLON.Color3(0, 1, 1);
 
-        //Назначаем материал подсветки на фигуру
-        this.mesh.material = highlightMaterial;
+            //Назначаем материал подсветки на фигуру
+            this.mesh.material = highlightMaterial;
+        }
 
         //Показываем опорные точки
         this.showPointMeshes();
@@ -249,7 +251,9 @@ export default class extends Element {
     }
 
     setMaterial(){
-        this.line.color = super.setMaterial();
+        if(this.line){
+            this.line.color = super.setMaterial();
+        }
     }
 
     update() {

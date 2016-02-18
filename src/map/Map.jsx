@@ -260,7 +260,7 @@ export default class {
         //Если мы уже в режиме добавления
         if (this.control.mode === CONTROL_MODES.APPEND) {
             //Убираем текущий элемент для дополнения
-            this.appendingElement.remove();
+            this.control.currentElement.remove();
         }
 
         this.setControlMode(CONTROL_MODES.APPEND);
@@ -287,6 +287,8 @@ export default class {
             "states": []
         };
 
-        this.appendingElement = this.elementDispatcher.createElement(newElementData);
+        let appendingElement = this.elementDispatcher.createElement(newElementData);
+
+        this.control.setCurrentElement(appendingElement);
     }
 }

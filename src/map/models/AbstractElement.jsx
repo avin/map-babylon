@@ -2,9 +2,13 @@ import colorHelper from '../Helpers/color'
 
 import {VISIBILITY} from '../../constants'
 
-export default class {
+export default class Abstract {
 
     constructor(Map, elementData) {
+        if (new.target === Abstract) {
+            throw new TypeError("Cannot construct Abstract instances directly");
+        }
+
         this.Map = Map;
         this.data = elementData;
         this._id = elementData._id;
@@ -226,18 +230,21 @@ export default class {
      * @returns {*|BABYLON.Color3.FromInts}
      */
     setMaterial() {
-        let mesh = this.mesh.sourceMesh ? this.mesh.sourceMesh : this.mesh;
-
-        mesh.material = new BABYLON.StandardMaterial('material', this.Map.scene);
-        mesh.material.glossiness = 0.2;
         let typeStyleColor = colorHelper.hexColorToBabylonColor3(_.get(this.getType(), 'style.color', '#FFFFFF'));
 
-        mesh.material.diffuseColor = typeStyleColor;
-        mesh.material.specularColor = new BABYLON.Color4(0.3, 0.3, 0.3, 0.5);
-        mesh.material.useGlossinessFromSpecularMapAlpha = true;
+        if (this.mesh){
+            //Если фигура является инстансом - работаем с исходной фигурой
+            let mesh = this.mesh.sourceMesh ? this.mesh.sourceMesh : this.mesh;
+
+            mesh.material = new BABYLON.StandardMaterial('material', this.Map.scene);
+            mesh.material.glossiness = 0.2;
+
+            mesh.material.diffuseColor = typeStyleColor;
+            mesh.material.specularColor = new BABYLON.Color4(0.3, 0.3, 0.3, 0.5);
+            mesh.material.useGlossinessFromSpecularMapAlpha = true;
+        }
 
         return typeStyleColor;
     }
-
 
 }

@@ -1,16 +1,16 @@
-import ElementCore from '../ElementCore';
+import AbstractElement from '../AbstractElement';
 
-export default class extends ElementCore {
+export default class extends AbstractElement {
 
-    constructor(Element, options = {}) {
-        super(Element);
+    constructor(Map, elementData, options = {}) {
+        super(Map, elementData);
 
         this.options = {};
         this.options.style = options.style || 'box';
         this.options.distance = options.distance || 1000;
         this.options.texture = options.texture || 'desert';
 
-        this._init()
+        this._init();
     }
 
     _init() {
@@ -27,31 +27,33 @@ export default class extends ElementCore {
         }
 
         //Данная фигура не будет отображаться на миникарте
-        if (this.Element.mesh) {
+        if (this.mesh) {
             //Сферу не будет видно на миникарте
-            this.Element.mesh.layerMask = 2;
+            this.mesh.layerMask = 2;
         }
+
+        super._init();
     }
 
     /**
      * Создать купольное небо
      */
     createSphereSkybox() {
-        this.Element.mesh = BABYLON.Mesh.CreateSphere("skyBox", 100, this.options.distance, this.Map.scene);
+        this.mesh = BABYLON.Mesh.CreateSphere("skyBox", 100, this.options.distance, this.Map.scene);
 
         this.setMaterial();
     }
 
     setMaterial(){
-        this.Element.mesh.material = this.createGradientMaterial();
+        this.mesh.material = this.createGradientMaterial();
     }
 
     /**
      * Создать коробочное небо
      */
     createBoxSkybox() {
-        this.Element.mesh = BABYLON.Mesh.CreateBox("skyBox", this.options.distance, this.Map.scene);
-        this.Element.mesh.material = this.createTexturedMaterial();
+        this.mesh = BABYLON.Mesh.CreateBox("skyBox", this.options.distance, this.Map.scene);
+        this.mesh.material = this.createTexturedMaterial();
     }
 
     /**
@@ -87,8 +89,8 @@ export default class extends ElementCore {
     setVisibilityNormal(){
         super.setVisibilityNormal();
 
-        this.Element.mesh.visibility = 1;
-        this.Element.mesh.material = this.createTexturedMaterial();
+        this.mesh.visibility = 1;
+        this.mesh.material = this.createTexturedMaterial();
     }
 
     /**
@@ -97,8 +99,8 @@ export default class extends ElementCore {
     setVisibilityTransparent(){
         super.setVisibilityTransparent();
 
-        this.Element.mesh.visibility = 1;
-        this.Element.mesh.material = this.createGradientMaterial();
+        this.mesh.visibility = 1;
+        this.mesh.material = this.createGradientMaterial();
     }
 
     /**
@@ -107,17 +109,17 @@ export default class extends ElementCore {
     setVisibilityHidden(){
         super.setVisibilityHidden();
 
-        this.Element.mesh.visibility = 0;
+        this.mesh.visibility = 0;
     }
 
     /**
      * Покадровое обновление элемента
      */
     update() {
-        if (this.Element.mesh) {
+        if (this.mesh) {
             //Двигаем небо вместе с камерой
-            this.Element.mesh.position.x = this.Map.scene.activeCamera.position.x;
-            this.Element.mesh.position.z = this.Map.scene.activeCamera.position.z
+            this.mesh.position.x = this.Map.scene.activeCamera.position.x;
+            this.mesh.position.z = this.Map.scene.activeCamera.position.z
         }
     }
 }
