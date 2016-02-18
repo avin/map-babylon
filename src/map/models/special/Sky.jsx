@@ -45,7 +45,7 @@ export default class extends AbstractElement {
     }
 
     setMaterial(){
-        this.mesh.material = this.createGradientMaterial();
+        //this.mesh.material = this.createGradientMaterial();
     }
 
     /**
@@ -60,7 +60,7 @@ export default class extends AbstractElement {
      * Создать градиентный материал для сферы
      */
     createGradientMaterial() {
-        let material = new BABYLON.ShaderMaterial("gradient", this.Map.scene, "/assets//shaders/gradient", {});
+        let material = new BABYLON.ShaderMaterial("gradient", this.Map.scene, "assets//shaders/gradient", {});
         material.setFloat("offset", 10);
         material.setColor3("topColor", BABYLON.Color3.FromInts(0, 119, 255));
         material.setColor3("bottomColor", BABYLON.Color3.FromInts(240, 240, 255));
@@ -74,7 +74,7 @@ export default class extends AbstractElement {
     createTexturedMaterial() {
         let material = new BABYLON.StandardMaterial("skyBox", this.Map.scene);
         material.backFaceCulling = false;
-        material.reflectionTexture = new BABYLON.CubeTexture(`/assets/textures/${this.options.texture}`, this.Map.scene);
+        material.reflectionTexture = new BABYLON.CubeTexture(`assets/textures/${this.options.texture}`, this.Map.scene);
         material.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
         material.diffuseColor = new BABYLON.Color3(0, 0, 0);
         material.specularColor = new BABYLON.Color3(0, 0, 0);
@@ -110,6 +110,24 @@ export default class extends AbstractElement {
         super.setVisibilityHidden();
 
         this.mesh.visibility = 0;
+    }
+
+    /**
+     * Подкрасить как совместимый для монтирования
+     */
+    colorMountCompatible(){
+    }
+
+    /**
+     * Подкрасить как несовместимый для монтирования
+     */
+    colorMountIncompatible(){
+    }
+
+    /**
+     * Убрать подкрашивание
+     */
+    unColor(){
     }
 
     /**
