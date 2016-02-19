@@ -41,7 +41,9 @@ export default class Abstract {
      */
     setVisibilityDefault() {
         //По умолчанию элемент отображается нормально
-        this.setVisibilityNormal();
+        if (this.visibility === undefined){
+            this.setVisibilityNormal();
+        }
     }
 
     /**

@@ -1,0 +1,10 @@
+{
+  "sky": {
+    "type": "textured"
+  },
+  "ground": {
+    "type": "simple",
+    "type_1": "tiled",
+    "type_2": "grid"
+  }
+}

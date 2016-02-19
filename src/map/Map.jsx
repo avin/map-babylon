@@ -62,7 +62,7 @@ export default class {
             //Если у типа есть модель
             let modelName = _.get(type, 'default_model');
             if (modelName) {
-                let meshTask = loader.addMeshTask(modelName, "", "assets/models/", `${modelName}.obj`);
+                let meshTask = loader.addMeshTask(modelName, "", "./assets/models/", `${modelName}.obj`);
                 meshTask.onSuccess = (t) => {
                     //Добавляем модель в единый массив
                     this.models[modelName] = BABYLON.Mesh.MergeMeshes(t.loadedMeshes);

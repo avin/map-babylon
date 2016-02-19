@@ -10,7 +10,7 @@ export default React.createClass({
                 <button className={`btn ${active ? 'btn-warning' : 'btn-default'}`}
                         key={key} title={item.name} onClick={item.action.bind(this, item.value)}>
 
-                    <img src={`assets/icons/${item.icon}`} width="24px" height="24px"/>
+                    <img src={`./assets/icons/${item.icon}`} width="24px" height="24px"/>
                 </button>
             )
         });

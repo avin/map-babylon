@@ -49,6 +49,7 @@ export default class extends AbstractElement {
     drawLine() {
         if (this.mesh) {
             this.mesh.dispose();
+            this.line.dispose();
         }
 
         //Рисуем линию только если кол-во секции больше нуля
