@@ -1,9 +1,11 @@
 import _ from 'lodash'
 import playerCamera from './scene/playerCamera';
 import miniMapCamera from './scene/miniMapCamera';
+import complexEditorCamera from './scene/complexEditorCamera';
 import mainLight from './scene/mainLight';
 import cameraLight from './scene/cameraLight';
 import filter from './scene/filter';
+import grid from './scene/grid';
 import Control from './Control';
 import UndoStack from './UndoStack';
 import ElementDispatcher from './models/ElementDispatcher';
@@ -24,8 +26,13 @@ export default class {
         // Contains all loaded assets
         this.models = [];
 
-        // The state scene
+        //Сцена карты
         this.scene = null;
+
+        //Сцена редактора комплексных элементов
+        this.complexEditorScene = null;
+
+        this.currentScene = null;
 
         // Control object
         this.control = null;
@@ -48,11 +55,14 @@ export default class {
         });
 
         this._init();
+
+        console.log(this)
     }
 
     _init() {
 
         this._initScene();
+        this._initComplexEditorScene();
 
         // The loader
         let loader = new BABYLON.AssetsManager(this.scene);
@@ -79,7 +89,7 @@ export default class {
             this.scene.executeWhenReady(() => {
 
                 this.engine.runRenderLoop(() => {
-                    this.scene.render();
+                    this.currentScene.render();
                 });
 
             });
@@ -97,6 +107,8 @@ export default class {
      */
     _initScene() {
         this.scene = new BABYLON.Scene(this.engine);
+
+        this.currentScene = this.scene;
 
         this.scene.clearColor = new BABYLON.Color3(0.8, 0.8, 0.8);
 
@@ -122,6 +134,19 @@ export default class {
         this.cameraLight = cameraLight.create(this, this.playerCamera, {});
 
         this.control = new Control(this);
+    }
+
+    _initComplexEditorScene(){
+        this.complexEditorScene = new BABYLON.Scene(this.engine);
+
+        //Фон сцены
+        this.complexEditorScene.clearColor = new BABYLON.Color3(0.05, 0.33, 0.63);
+
+        //Создание камеры сцены
+        this.complexEditorCamera = complexEditorCamera.create(this, {});
+
+        grid.create(this.complexEditorScene);
+
     }
 
     /**
@@ -290,5 +315,13 @@ export default class {
         let appendingElement = this.elementDispatcher.createElement(newElementData);
 
         this.control.setCurrentElement(appendingElement);
+    }
+
+    openMapScene(){
+        this.currentScene = this.scene;
+    }
+
+    openComplexEditorScene(){
+        this.currentScene = this.complexEditorScene;
     }
 }

@@ -1,9 +1,8 @@
 export default {
 
-    create(Map, options = {}){
+    create(scene, options = {}){
 
         let position = options.position || new BABYLON.Vector3(0, 0, 0);
-        let scene = Map.scene;
         let i;
         let line;
 

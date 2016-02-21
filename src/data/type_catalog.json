@@ -142,7 +142,8 @@
         "create_enable": true,
         "rules": {
             "mount": [
-                5
+                5,
+                3
             ],
             "intermediate": [
                 3,
@@ -157,7 +158,7 @@
     {
         "_id": 7,
         "name": "Столб с опорами",
-        "kind": "group",
+        "kind": "complex",
         "parent_id": 0,
         "create_enable": true,
         "parts": {

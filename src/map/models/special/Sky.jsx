@@ -39,19 +39,23 @@ export default class extends AbstractElement {
      * Создать купольное небо
      */
     createSphereSkybox() {
+        if (this.mesh){
+            this.mesh.dispose(true)
+        }
         this.mesh = BABYLON.Mesh.CreateSphere("skyBox", 100, this.options.distance, this.Map.scene);
-
         this.setMaterial();
     }
 
     setMaterial(){
-        //this.mesh.material = this.createGradientMaterial();
     }
 
     /**
      * Создать коробочное небо
      */
     createBoxSkybox() {
+        if (this.mesh){
+            this.mesh.dispose(true)
+        }
         this.mesh = BABYLON.Mesh.CreateBox("skyBox", this.options.distance, this.Map.scene);
         this.mesh.material = this.createTexturedMaterial();
     }
@@ -60,7 +64,7 @@ export default class extends AbstractElement {
      * Создать градиентный материал для сферы
      */
     createGradientMaterial() {
-        let material = new BABYLON.ShaderMaterial("gradient", this.Map.scene, "assets//shaders/gradient", {});
+        let material = new BABYLON.ShaderMaterial("gradient", this.Map.scene, "./assets/shaders/gradient", {});
         material.setFloat("offset", 10);
         material.setColor3("topColor", BABYLON.Color3.FromInts(0, 119, 255));
         material.setColor3("bottomColor", BABYLON.Color3.FromInts(240, 240, 255));
@@ -74,7 +78,7 @@ export default class extends AbstractElement {
     createTexturedMaterial() {
         let material = new BABYLON.StandardMaterial("skyBox", this.Map.scene);
         material.backFaceCulling = false;
-        material.reflectionTexture = new BABYLON.CubeTexture(`assets/textures/${this.options.texture}`, this.Map.scene);
+        material.reflectionTexture = new BABYLON.CubeTexture(`./assets/textures/${this.options.texture}`, this.Map.scene);
         material.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
         material.diffuseColor = new BABYLON.Color3(0, 0, 0);
         material.specularColor = new BABYLON.Color3(0, 0, 0);

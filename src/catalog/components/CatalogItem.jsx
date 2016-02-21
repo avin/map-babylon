@@ -5,8 +5,6 @@ import Toggle from './Toggle'
 import Content from './Content'
 import Visibility from './Visibility'
 
-
-
 export default React.createClass({
     handleShowChildren(){
         catalogActions.toggleShowChildren(this.props.item._id)
@@ -18,6 +16,9 @@ export default React.createClass({
     handleAppendElement(){
         catalogActions.appendElement(this.props.item)
     },
+    handleEditComplexElement(){
+        window.app.map.openComplexEditorScene()
+    },
     render(){
         let addButton;
         if (this.props.item.create_enable) {
@@ -28,7 +29,16 @@ export default React.createClass({
             )
         }
 
-        let isVisible = !this.props.item.is_hidden;
+        let editButton;
+        if (this.props.item.kind === 'complex') {
+            editButton = (
+                <button className="btn btn-xs btn-default btn-show-complex-editor" onClick={this.handleEditComplexElement}>
+                    <i className="fa fa-pencil"/>
+                </button>
+            )
+        }
+
+        let isVisible = !_.get(this.props.item, 'is_hidden', false);
 
         let showChildren;
         if (this.props.haveChildren) {
@@ -60,7 +70,7 @@ export default React.createClass({
                     </div>
 
                     <div className="col-xs-8" onClick={this.handleShowChildren}>
-                        <span dangerouslySetInnerHTML={{__html:this._highlightQuery(this.props.item.name, this.props.searchValue)}} />
+                        <span dangerouslySetInnerHTML={{__html:this._highlightQuery(this.props.item.name, this.props.searchValue)}} /> {editButton}
                     </div>
                     <div className="col-xs-1">
                         {addButton}
