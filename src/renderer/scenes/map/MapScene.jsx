@@ -1,71 +1,56 @@
-import _ from 'lodash'
-import playerCamera from './scene/playerCamera';
-import miniMapCamera from './scene/miniMapCamera';
-import complexEditorCamera from './scene/complexEditorCamera';
-import mainLight from './scene/mainLight';
-import cameraLight from './scene/cameraLight';
-import filter from './scene/filter';
-import grid from './scene/grid';
-import Control from './Control';
-import UndoStack from './UndoStack';
-import ElementDispatcher from './models/ElementDispatcher';
+import Scene from '../Scene'
 
-import {CONTROL_MODES} from '../constants'
+import PlayerCamera from './cameras/PlayerCamera';
+import MiniMapCamera from './cameras/MiniMapCamera';
+import MainLight from './lights/MainLight';
+import CameraLight from './lights/CameraLight';
+
+//import filter from './scene/filter';
+//import grid from './scene/grid';
+//import UndoStack from './UndoStack';
+import Control from './control/Control';
+import ElementDispatcher from './../../elements/ElementDispatcher';
+
+import {CONTROL_MODES} from '../../../constants'
 
 //Импорт данных
-import typeCatalog from '../data/type_catalog.json'
-import elementCatalog from '../data/element_catalog.json'
+import typeCatalog from '../../../data/type_catalog.json'
+import elementCatalog from '../../../data/element_catalog.json'
 
-export default class {
+export default class extends Scene {
 
-    constructor(canvasId) {
-        this.canvas = document.getElementById(canvasId);
+    constructor(engine) {
+        super(engine);
 
-        this.engine = new BABYLON.Engine(this.canvas, true);
+        //Персональное имя сцены
+        this.name = 'map';
 
-        // Contains all loaded assets
-        this.models = [];
-
-        //Сцена карты
-        this.scene = null;
-
-        //Сцена редактора комплексных элементов
-        this.complexEditorScene = null;
-
-        this.currentScene = null;
-
-        // Control object
-        this.control = null;
-
+        //Каталог типов элементов
         this.typeCatalog = _.keyBy(typeCatalog, '_id');
+
+        //Каталог элементов
         this.elementCatalog = _.keyBy(elementCatalog, '_id');
 
+        //Диспетчер элементов
         this.elementDispatcher = new ElementDispatcher(this);
 
+        //Массив элементов на карте
         this.elements = [];
 
         //Определения стека отмены действий
-        this.undoStack = new UndoStack(this);
+        //this.undoStack = new UndoStack(this);
 
+        //Внутренее время сцены
         this.time = 0.0;
 
-        // Resize window event
-        window.addEventListener("resize", () => {
-            this.engine.resize();
-        });
-
         this._init();
-
-        console.log(this)
     }
 
     _init() {
-
         this._initScene();
-        this._initComplexEditorScene();
 
         // The loader
-        let loader = new BABYLON.AssetsManager(this.scene);
+        let loader = new BABYLON.AssetsManager(this);
 
         //Загружаем все типовые модели из каталога
         _.each(this.typeCatalog, (type) => {
@@ -79,19 +64,15 @@ export default class {
                     //Уменьшаем размер исходной фигуры до нулевого состояния
                     this.models[modelName].scaling = new BABYLON.Vector3(0, 0, 0);
                     //this.models[modelName].setEnabled(false);
-                    this.models[modelName].material = new BABYLON.StandardMaterial('material', this.scene);
+                    this.models[modelName].material = new BABYLON.StandardMaterial('material', this);
                 };
             }
         });
 
         loader.onFinish = () => {
 
-            this.scene.executeWhenReady(() => {
-
-                this.engine.runRenderLoop(() => {
-                    this.currentScene.render();
-                });
-
+            this.executeWhenReady(() => {
+                this.renderer.setActiveScene(this.name);
             });
 
             this._initContent();
@@ -106,20 +87,23 @@ export default class {
      * @private
      */
     _initScene() {
-        this.scene = new BABYLON.Scene(this.engine);
+        //Цвет фона
+        this.clearColor = new BABYLON.Color3(0.8, 0.8, 0.8);
 
-        this.currentScene = this.scene;
+        //this.debugLayer.show();
 
-        this.scene.clearColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+        /*
+         ================================================
+         Оптимизация
+         ================================================
+         */
 
-        //this.scene.debugLayer.show();
-
-        BABYLON.SceneOptimizer.OptimizeAsync(this.scene, BABYLON.SceneOptimizerOptions.ModerateDegradationAllowed(50),
+        BABYLON.SceneOptimizer.OptimizeAsync(this, BABYLON.SceneOptimizerOptions.ModerateDegradationAllowed(50),
             () => {
                 console.log('Optimized ModerateDegradation')
             },
             () => {
-                BABYLON.SceneOptimizer.OptimizeAsync(this.scene, BABYLON.SceneOptimizerOptions.HighDegradationAllowed(40),
+                BABYLON.SceneOptimizer.OptimizeAsync(this, BABYLON.SceneOptimizerOptions.HighDegradationAllowed(40),
                     () => {
                         console.log('Optimized by HighDegradation')
                     },
@@ -128,29 +112,57 @@ export default class {
                     });
             });
 
-        this.playerCamera = playerCamera.create(this, {});
-        this.miniMapCamera = miniMapCamera.create(this, {});
-        this.mainLight = mainLight.create(this, {});
-        this.cameraLight = cameraLight.create(this, this.playerCamera, {});
 
-        this.control = new Control(this);
-    }
+        this._initCameras();
+        this._initLights();
+        this._initControl();
 
-    _initComplexEditorScene(){
-        this.complexEditorScene = new BABYLON.Scene(this.engine);
-
-        //Фон сцены
-        this.complexEditorScene.clearColor = new BABYLON.Color3(0.05, 0.33, 0.63);
-
-        //Создание камеры сцены
-        this.complexEditorCamera = complexEditorCamera.create(this, {});
-
-        grid.create(this.complexEditorScene);
 
     }
 
     /**
-     * Инициализация содержимого карты
+     * Инициализация камер
+     * @private
+     */
+    _initCameras(){
+        //Главная камера
+        let playerCameraOptions = {};
+        this.playerCamera = new PlayerCamera("PlayerCamera", new BABYLON.Vector3(0.0, 0.0, 0.0), this, playerCameraOptions);
+        this.activeCameras.push(this.playerCamera);
+
+        //Привязываем управление к камере
+        this.playerCamera.attachControl(this.getEngine().getRenderingCanvas(), false);
+
+        //Через эту камеру будут производиться действия с элементами
+        this.cameraToUseForPointers = this.playerCamera;
+
+        //Мини камера
+        //this.miniMapCamera = new MiniMapCamera();
+
+    }
+
+    /**
+     * Инициализация светильников
+     * @private
+     */
+    _initLights(){
+        let mainLightOptions = {};
+        this.mainLight = new MainLight("MainLight", new BABYLON.Vector3(-1, -1, 1), this, mainLightOptions);
+
+        let cameraLightOptions = {};
+        this.cameraLight = new CameraLight("cameraLight", new BABYLON.Vector3(1, 10, 1), this, cameraLightOptions);
+    }
+
+    /**
+     * Инициализация управления
+     * @private
+     */
+    _initControl(){
+        this.control = new Control(this);
+    }
+
+    /**
+     * Инициализация содержимого сцены
      * @private
      */
     _initContent() {
@@ -160,8 +172,8 @@ export default class {
             this.elementDispatcher.createElement(elementData);
         });
 
-        this.scene.beforeRender = () => {
-            let delta = this.engine.getDeltaTime() / 1000.0;
+        this.beforeRender = () => {
+            let delta = this.getEngine().getDeltaTime() / 1000.0;
             this.time += delta;
 
             this._update(delta, this.time);
@@ -205,7 +217,7 @@ export default class {
      * Включить уплавление
      */
     enableControl() {
-        this.control.enableCameraControl();
+        //this.control.enableCameraControl();
     }
 
     /**
@@ -315,13 +327,5 @@ export default class {
         let appendingElement = this.elementDispatcher.createElement(newElementData);
 
         this.control.setCurrentElement(appendingElement);
-    }
-
-    openMapScene(){
-        this.currentScene = this.scene;
-    }
-
-    openComplexEditorScene(){
-        this.currentScene = this.complexEditorScene;
     }
 }

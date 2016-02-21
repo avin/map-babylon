@@ -1,16 +1,18 @@
 import Reflux from 'reflux';
 import React from 'react';
 import ReactDOM from 'react-dom';
+
+import mapUiBoxStore from './stores/mapUiBoxStore';
+import mapUiBoxActions from './actions/mapUiBoxActions';
 import UiBox from './components/UiBox';
-import uiBoxActions from './actions/uiBoxActions';
 
 export default class {
 
-    constructor(UiBoxDomId) {
-        this.dom = document.getElementById(UiBoxDomId);
+    constructor(MapUiBoxDomId) {
+        this.dom = document.getElementById(MapUiBoxDomId);
 
         //Добавляем все reflux экшны в текущий класс
-        _.each(uiBoxActions, (action, actionName) => {
+        _.each(mapUiBoxActions, (action, actionName) => {
             this[actionName] = action;
         });
 

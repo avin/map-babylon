@@ -2,8 +2,8 @@ import AbstractElement from '../AbstractElement';
 
 export default class extends AbstractElement {
 
-    constructor(Map, elementData, options = {}) {
-        super(Map, elementData);
+    constructor(scene, elementData, options = {}) {
+        super(scene, elementData);
 
         this.options = {};
         this.options.style = options.style || 'box';
@@ -42,7 +42,7 @@ export default class extends AbstractElement {
         if (this.mesh){
             this.mesh.dispose(true)
         }
-        this.mesh = BABYLON.Mesh.CreateSphere("skyBox", 100, this.options.distance, this.Map.scene);
+        this.mesh = BABYLON.Mesh.CreateSphere("skyBox", 100, this.options.distance, this.scene);
         this.setMaterial();
     }
 
@@ -56,7 +56,7 @@ export default class extends AbstractElement {
         if (this.mesh){
             this.mesh.dispose(true)
         }
-        this.mesh = BABYLON.Mesh.CreateBox("skyBox", this.options.distance, this.Map.scene);
+        this.mesh = BABYLON.Mesh.CreateBox("skyBox", this.options.distance, this.scene);
         this.mesh.material = this.createTexturedMaterial();
     }
 
@@ -64,7 +64,7 @@ export default class extends AbstractElement {
      * Создать градиентный материал для сферы
      */
     createGradientMaterial() {
-        let material = new BABYLON.ShaderMaterial("gradient", this.Map.scene, "./assets/shaders/gradient", {});
+        let material = new BABYLON.ShaderMaterial("gradient", this.scene, "./assets/shaders/gradient", {});
         material.setFloat("offset", 10);
         material.setColor3("topColor", BABYLON.Color3.FromInts(0, 119, 255));
         material.setColor3("bottomColor", BABYLON.Color3.FromInts(240, 240, 255));
@@ -76,9 +76,9 @@ export default class extends AbstractElement {
      * Создать текстурированный материал для коробки
      */
     createTexturedMaterial() {
-        let material = new BABYLON.StandardMaterial("skyBox", this.Map.scene);
+        let material = new BABYLON.StandardMaterial("skyBox", this.scene);
         material.backFaceCulling = false;
-        material.reflectionTexture = new BABYLON.CubeTexture(`./assets/textures/${this.options.texture}`, this.Map.scene);
+        material.reflectionTexture = new BABYLON.CubeTexture(`./assets/textures/${this.options.texture}`, this.scene);
         material.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
         material.diffuseColor = new BABYLON.Color3(0, 0, 0);
         material.specularColor = new BABYLON.Color3(0, 0, 0);
@@ -140,8 +140,8 @@ export default class extends AbstractElement {
     update() {
         if (this.mesh) {
             //Двигаем небо вместе с камерой
-            this.mesh.position.x = this.Map.scene.activeCamera.position.x;
-            this.mesh.position.z = this.Map.scene.activeCamera.position.z
+            this.mesh.position.x = this.scene.activeCamera.position.x;
+            this.mesh.position.z = this.scene.activeCamera.position.z
         }
     }
 }

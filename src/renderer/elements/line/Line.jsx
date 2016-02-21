@@ -2,8 +2,8 @@ import AbstractElement from '../AbstractElement';
 
 export default class extends AbstractElement {
 
-    constructor(Map, elementData) {
-        super(Map, elementData);
+    constructor(scene, elementData) {
+        super(scene, elementData);
 
         //Размер опорной точки
         this.pointMeshSize = 0.3;
@@ -26,7 +26,7 @@ export default class extends AbstractElement {
             let parent;
 
             //Находим родительский элемент по его ID
-            let parentElement = _.find(this.Map.elements, (element) => {
+            let parentElement = _.find(this.scene.elements, (element) => {
                 return element._id === coordinate.parent_id
             });
 
@@ -66,11 +66,11 @@ export default class extends AbstractElement {
              */
 
             //Инче создаем новую
-            this.mesh = BABYLON.Mesh.CreateTube("lines", linePositions, this.tubeRadius, 3, null, 0, this.Map.scene, true);
+            this.mesh = BABYLON.Mesh.CreateTube("lines", linePositions, this.tubeRadius, 3, null, 0, this.scene, true);
             this.mesh.freezeNormals();
 
             //Рисуем линию в виде нитки
-            this.line = BABYLON.Mesh.CreateLines("lines", linePositions, this.Map.scene, true);
+            this.line = BABYLON.Mesh.CreateLines("lines", linePositions, this.scene, true);
 
             this.setMaterial();
 
@@ -99,8 +99,8 @@ export default class extends AbstractElement {
      * @param isAbsolutePosition
      */
     initPointMesh(position, parentElement, isAbsolutePosition = true) {
-        let point = BABYLON.Mesh.CreateSphere('linePoint', 10, this.pointMeshSize, this.Map.scene, false, BABYLON.Mesh.FRONTSIDE);
-        point.material = new BABYLON.StandardMaterial('material', this.Map.scene);
+        let point = BABYLON.Mesh.CreateSphere('linePoint', 10, this.pointMeshSize, this.scene, false, BABYLON.Mesh.FRONTSIDE);
+        point.material = new BABYLON.StandardMaterial('material', this.scene);
         point.material.diffuseColor = new BABYLON.Color3.Yellow();
 
         //Материал не реагирует на свет
@@ -165,7 +165,7 @@ export default class extends AbstractElement {
     enableHighlight() {
         if (this.mesh){
             //Создаем новый материал для подсветки
-            let highlightMaterial = new BABYLON.StandardMaterial('mat', this.Map.scene);
+            let highlightMaterial = new BABYLON.StandardMaterial('mat', this.scene);
             highlightMaterial.diffuseColor = new BABYLON.Color3(0, 1, 1);
 
             //Назначаем материал подсветки на фигуру
@@ -273,7 +273,7 @@ export default class extends AbstractElement {
 
         //Увеличиываем размер опорных точек в зависимости от удаленности камеры
         _.each(this.pointMeshes, (pointMesh) => {
-            let scale = BABYLON.Vector3.Distance(this.Map.playerCamera.position, pointMesh.getAbsolutePosition()) / 10;
+            let scale = BABYLON.Vector3.Distance(this.scene.playerCamera.position, pointMesh.getAbsolutePosition()) / 10;
             pointMesh.scaling = new BABYLON.Vector3(scale, scale, scale);
         })
     }

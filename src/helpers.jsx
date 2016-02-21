@@ -1,13 +1,71 @@
 import Proj4js from 'proj4'
 
-export default {
+/**
+ * Геометрические расчеты
+ *
+ */
+export const calc = {
+    /**
+     * Получение радианы
+     * @param point
+     * @param center
+     * @param radius
+     * @param initAxis
+     * @returns {number}
+     */
+    getRadian(point, center, radius, initAxis) {
+        let cX = center[initAxis.x];
+        let cY = center[initAxis.y];
+
+        let vX = (point[initAxis.x] - cX);
+        let vY = (point[initAxis.y] - cY);
+        let magV = Math.sqrt(vX * vX + vY * vY);
+        let aX = cX + vX / magV * radius;
+        let aY = cY + vY / magV * radius;
+
+        return Math.atan2(aY - cY, aX - cX);
+    }
+};
+
+/**
+ * Работа с цветом
+ *
+ */
+export const color = {
+    /**
+     * Конвертация hex-строки цвета в формат Бабилона
+     * @param hex
+     * @returns {BABYLON.Color3.FromInts}
+     */
+    hexColorToBabylonColor3(hex) {
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        let color = result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+
+        if (color) {
+            return new BABYLON.Color3.FromInts(color.r, color.g, color.b)
+        } else {
+            return new BABYLON.Color3(0.1, 0.1, 0.1)
+        }
+    }
+};
+
+/**
+ * Функции для преобразования координат
+ *
+ */
+export const coordinateConverter = {
 
     /**
      * Конвертация градусных координат в пиксельные
      */
     degreesToPixels(lat, lng) {
         let source = new Proj4js.Proj('EPSG:4326');   //source coordinates will be in lnggitude/Latitude, WGS84
-        let dest = new Proj4js.Proj('EPSG:3857');     //destination coordinates in meters, global spherical mercators projection, see http://spatialreference.org/ref/epsg/3785/
+        let dest = new Proj4js.Proj('EPSG:3857');     //destination coordinates in meters, global spherical mercators
+                                                      // projection, see http://spatialreference.org/ref/epsg/3785/
 
         // transforming point coordinates
         let p = new Proj4js.toPoint([lng, lat]);   //any object will do as lngg as it has 'x' and 'y' properties
@@ -77,4 +135,4 @@ export default {
 
         return {lat: lat, lng: lng};
     },
-}
+};

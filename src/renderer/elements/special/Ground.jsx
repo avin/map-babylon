@@ -1,10 +1,10 @@
 import AbstractElement from '../AbstractElement';
-import CoordinateHelpers from '../../Helpers/coordinate';
+import {coordinateConverter} from '../../../helpers';
 
 export default class extends AbstractElement {
 
-    constructor(Map, elementData, options = {}) {
-        super(Map, elementData);
+    constructor(scene, elementData, options = {}) {
+        super(scene, elementData);
 
         this.options = {};
         this.options.style = options.style || 'tiled';
@@ -42,7 +42,7 @@ export default class extends AbstractElement {
         let drawDistance = 1000;
 
         // Создаем объект
-        this.mesh = new BABYLON.Mesh.CreateGround("ground", drawDistance, drawDistance, 50, this.Map.scene);
+        this.mesh = new BABYLON.Mesh.CreateGround("ground", drawDistance, drawDistance, 50, this.scene);
 
         this.setMaterial(this.subColor);
     }
@@ -59,9 +59,9 @@ export default class extends AbstractElement {
         //Зум для выборки тайлов
         let zoom = 19;
 
-        let cameraPosition = this.Map.playerCamera.position;
-        let cameraGeoPosition = CoordinateHelpers.pixelsToDegrees(cameraPosition.x, cameraPosition.z);
-        let tileUnderCameraData = CoordinateHelpers.gpsToTileCoords(cameraGeoPosition.lat, cameraGeoPosition.lng, zoom);
+        let cameraPosition = this.scene.playerCamera.position;
+        let cameraGeoPosition = coordinateConverter.pixelsToDegrees(cameraPosition.x, cameraPosition.z);
+        let tileUnderCameraData = coordinateConverter.gpsToTileCoords(cameraGeoPosition.lat, cameraGeoPosition.lng, zoom);
 
         this.currentTileUnderCameraData = tileUnderCameraData;
 
@@ -72,11 +72,11 @@ export default class extends AbstractElement {
             yMax: tileUnderCameraData.y - 5,
         };
 
-        let minTileGeoData = CoordinateHelpers.tileCoordsToGps(tiles.xMin, tiles.yMin + 1, zoom);
-        let maxTileGeoData = CoordinateHelpers.tileCoordsToGps(tiles.xMax + 1, tiles.yMax, zoom);
+        let minTileGeoData = coordinateConverter.tileCoordsToGps(tiles.xMin, tiles.yMin + 1, zoom);
+        let maxTileGeoData = coordinateConverter.tileCoordsToGps(tiles.xMax + 1, tiles.yMax, zoom);
 
-        let minTilePixelData = CoordinateHelpers.degreesToPixels(minTileGeoData.lat, minTileGeoData.lng);
-        let maxTilePixelData = CoordinateHelpers.degreesToPixels(maxTileGeoData.lat, maxTileGeoData.lng);
+        let minTilePixelData = coordinateConverter.degreesToPixels(minTileGeoData.lat, minTileGeoData.lng);
+        let maxTilePixelData = coordinateConverter.degreesToPixels(maxTileGeoData.lat, maxTileGeoData.lng);
 
         let xmin = minTilePixelData.x;
         let zmin = minTilePixelData.y;
@@ -93,10 +93,10 @@ export default class extends AbstractElement {
             'w': 11
         };
 
-        this.mesh = new BABYLON.Mesh.CreateTiledGround("ground", xmin, zmin, xmax, zmax, subdivisions, precision, this.Map.scene);
+        this.mesh = new BABYLON.Mesh.CreateTiledGround("ground", xmin, zmin, xmax, zmax, subdivisions, precision, this.scene);
 
         //Создаем мультиматериала
-        let multimat = new BABYLON.MultiMaterial("multi", this.Map.scene);
+        let multimat = new BABYLON.MultiMaterial("multi", this.scene);
 
         //Создаем тайловый материал
         let xTileBase = tiles.xMin;
@@ -105,13 +105,13 @@ export default class extends AbstractElement {
             for (let col = 0; col < subdivisions.w; col++) {
                 let material = new BABYLON.StandardMaterial(
                     "material" + row + "-" + col,
-                    this.Map.scene
+                    this.scene
                 );
                 material.diffuseTexture = new BABYLON.Texture(
                     //`http://tiles.el.vladinfo.ru/mapnik/z${zoom}/${yTileBase - row}/${xTileBase + col}.png`,
                     `http://a.tile.openstreetmap.org/${zoom}/${xTileBase + col}/${yTileBase - row}.png`,
                     //`http://a.tile.stamen.com/toner/${zoom}/${xTileBase + col}/${yTileBase - row}.png`,
-                    this.Map.scene
+                    this.scene
                 );
                 material.diffuseTexture.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
                 material.diffuseTexture.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
@@ -237,17 +237,17 @@ export default class extends AbstractElement {
             {
                 if (this.mesh) {
                     //Двигаем землю вместе с камерой
-                    this.mesh.position.x = this.Map.scene.activeCamera.position.x;
-                    this.mesh.position.z = this.Map.scene.activeCamera.position.z
+                    this.mesh.position.x = this.scene.playerCamera.position.x;
+                    this.mesh.position.z = this.scene.playerCamera.position.z
                 }
                 break;
             }
             case 'tiled':
             {
                 let zoom = 19;
-                let cameraPosition = this.Map.playerCamera.position;
-                let cameraGeoPosition = CoordinateHelpers.pixelsToDegrees(cameraPosition.x, cameraPosition.z);
-                let tileUnderCameraData = CoordinateHelpers.gpsToTileCoords(cameraGeoPosition.lat, cameraGeoPosition.lng, zoom);
+                let cameraPosition = this.scene.playerCamera.position;
+                let cameraGeoPosition = coordinateConverter.pixelsToDegrees(cameraPosition.x, cameraPosition.z);
+                let tileUnderCameraData = coordinateConverter.gpsToTileCoords(cameraGeoPosition.lat, cameraGeoPosition.lng, zoom);
 
                 if (!_.isEqual(this.currentTileUnderCameraData, tileUnderCameraData)){
                     this.createTileGround();

@@ -1,16 +1,16 @@
-import calcHelper from './helpers/calc';
-import uiBoxActions from '../ui-box/actions/uiBoxActions'
-import {KEY_CODES, CONTROL_MODES} from '../constants';
+import {calc} from '../../../../helpers';
+import mapUiBoxActions from '../../../../uiBoxes/map/actions/mapUiBoxActions'
+import {KEY_CODES, CONTROL_MODES} from '../../../../constants';
 
 export default class {
 
-    constructor(Map) {
+    constructor(scene) {
 
-        this.Map = Map;
-        this.playerCamera = Map.playerCamera;
-        this.miniCamera = Map.miniCamera;
+        this.scene = scene;
+        this.playerCamera = scene.playerCamera;
+        this.miniCamera = scene.miniCamera;
 
-        //Инициализируем состояния нажатых клавиш
+        //Состаяния нажатых клавиш
         this.keyStates = {
             left: 0,
             right: 0,
@@ -51,10 +51,10 @@ export default class {
 
     _init() {
         //Вешаем стандартный обработчик событий бабилона на сцену
-        this.Map.scene.actionManager = new BABYLON.ActionManager(this.Map.scene);
+        this.scene.actionManager = new BABYLON.ActionManager(this.scene);
 
         //Назначем состояние клавиш при нажатии
-        this.Map.scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, (evt) => {
+        this.scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, (evt) => {
             _.each(KEY_CODES, (keyCode, eventName) => {
                 if ((evt.sourceEvent.keyCode) === keyCode) {
                     this.keyStates[eventName] = 1;
@@ -63,7 +63,7 @@ export default class {
         }));
 
         //Назначем состояние клавиш при отжатии
-        this.Map.scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, (evt) => {
+        this.scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, (evt) => {
             _.each(KEY_CODES, (keyCode, eventName) => {
                 if ((evt.sourceEvent.keyCode) === keyCode) {
                     this.keyStates[eventName] = 0;
@@ -78,7 +78,7 @@ export default class {
         this.playerCamera.keysRight = [KEY_CODES.right];
 
         //Дейсвтие до рендера кадра
-        this.Map.scene.registerBeforeRender(() => {
+        this.scene.registerBeforeRender(() => {
 
             //Привязываем положение миникарты к основной камере
             if (this.miniCamera) {
@@ -95,7 +95,7 @@ export default class {
             let cameraPositionY = this.playerCamera.position.y;
 
             //Только если камера в режиме управления
-            if (this.Map.playerCamera._attachedElement) {
+            if (this.scene.playerCamera._attachedElement) {
 
                 //Передвижение камеры вверх
                 if (this.keyStates.up == 1) {
@@ -116,7 +116,7 @@ export default class {
              */
 
             //Только если камера в режиме управления
-            if (this.Map.playerCamera._attachedElement) {
+            if (this.scene.playerCamera._attachedElement) {
                 //Удаляем элемент
                 if (this.keyStates.delete) {
                     this.deleteElement();
@@ -134,20 +134,20 @@ export default class {
     _enableClickInteractionControl() {
 
         //Отключаем стандартное контексное меню
-        this.Map.canvas.addEventListener("contextmenu", (event) => {
+        this.scene.getEngine().getRenderingCanvas().addEventListener("contextmenu", (event) => {
             event.preventDefault()
         }, false);
 
         //Обработчики событий мыши
-        this.Map.canvas.addEventListener("pointerdown", this.onPointerDown.bind(this), false);
-        this.Map.canvas.addEventListener("pointerup", this.onPointerUp.bind(this), false);
-        this.Map.canvas.addEventListener("pointermove", this.onPointerMove.bind(this), false);
+        this.scene.getEngine().getRenderingCanvas().addEventListener("pointerdown", this.onPointerDown.bind(this), false);
+        this.scene.getEngine().getRenderingCanvas().addEventListener("pointerup", this.onPointerUp.bind(this), false);
+        this.scene.getEngine().getRenderingCanvas().addEventListener("pointermove", this.onPointerMove.bind(this), false);
 
         //Снимаем обработчики при удалении сцены
-        this.Map.scene.onDispose = () => {
-            this.Map.canvas.removeEventListener("pointerdown", this.onPointerDown);
-            this.Map.canvas.removeEventListener("pointerup", this.onPointerUp);
-            this.Map.canvas.removeEventListener("pointermove", this.onPointerMove);
+        this.scene.onDispose = () => {
+            this.scene.getEngine().getRenderingCanvas().removeEventListener("pointerdown", this.onPointerDown);
+            this.scene.getEngine().getRenderingCanvas().removeEventListener("pointerup", this.onPointerUp);
+            this.scene.getEngine().getRenderingCanvas().removeEventListener("pointermove", this.onPointerMove);
         }
     }
 
@@ -192,8 +192,8 @@ export default class {
      * @param event
      */
     onPointerMove(event) {
-        let scene = this.Map.scene;
-        let camera = this.Map.playerCamera;
+        let scene = this.scene;
+        let camera = this.playerCamera;
 
         //Если выбрана фигура управления
         if (this.currentControlMesh && this.currentElement) {
@@ -242,8 +242,8 @@ export default class {
 
                         if (currentPointOnSupportPlane) {
                             let initAxis = {x: 'x', y: 'y'};
-                            let rotationRadian = calcHelper.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
-                            let startRadian = calcHelper.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
+                            let rotationRadian = calc.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
+                            let startRadian = calc.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
 
                             this.currentElement.mesh.rotation.z = this.currentElement.mesh.rotation.z + (rotationRadian - startRadian);
                             this.supportPlane.startPoint = currentPointOnSupportPlane;
@@ -258,8 +258,8 @@ export default class {
 
                         if (currentPointOnSupportPlane) {
                             let initAxis = {x: 'z', y: 'x'};
-                            let rotationRadian = calcHelper.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
-                            let startRadian = calcHelper.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
+                            let rotationRadian = calc.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
+                            let startRadian = calc.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
 
                             this.currentElement.mesh.rotation.y = this.currentElement.mesh.rotation.y + (rotationRadian - startRadian);
                             this.supportPlane.startPoint = currentPointOnSupportPlane;
@@ -274,8 +274,8 @@ export default class {
 
                         if (currentPointOnSupportPlane) {
                             let initAxis = {x: 'y', y: 'z'};
-                            let rotationRadian = calcHelper.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
-                            let startRadian = calcHelper.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
+                            let rotationRadian = calc.getRadian(currentPointOnSupportPlane, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
+                            let startRadian = calc.getRadian(this.supportPlane.startPoint, this.supportPlane.zeroPoint, this.currentControlMesh.radius, initAxis);
 
                             this.currentElement.mesh.rotation.x = this.currentElement.mesh.rotation.x + (rotationRadian - startRadian);
                             this.supportPlane.startPoint = currentPointOnSupportPlane;
@@ -401,7 +401,7 @@ export default class {
      * @param event
      */
     onLeftPointerDown(event) {
-        let scene = this.Map.scene;
+        let scene = this.scene;
         let pickInfo;
 
         this.startingMousePoint = {x: event.clientX, y: event.clientY};
@@ -413,7 +413,7 @@ export default class {
                     //Проверяем если попали в опорную точку линии
                     pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
                         return _.includes(this.currentElement.pointMeshes, mesh);
-                    }, false, this.Map.playerCamera);
+                    }, false, this.playerCamera);
 
                     if (pickInfo.hit) {
                         //Назначаем опорную точку фигурой управления
@@ -427,7 +427,7 @@ export default class {
                     //Проверяем если попали в фигуру управления
                     pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
                         return _.includes(this.controlMeshes, mesh);
-                    }, false, this.Map.playerCamera);
+                    }, false, this.playerCamera);
 
                     if (pickInfo.hit) {
                         //Назначаем текущую фигуру управления
@@ -466,7 +466,7 @@ export default class {
 
         if (this.currentElement) {
             //Сохраняем состояние элемента до действия
-            //this.undoItemId = this.Map.undoStack.initUndoItem(this.currentElement);
+            //this.undoItemId = this.scene.undoStack.initUndoItem(this.currentElement);
         }
     }
 
@@ -475,7 +475,7 @@ export default class {
      * @param event
      */
     onLeftPointerUp(event) {
-        let scene = this.Map.scene;
+        let scene = this.scene;
         let pickInfo;
 
         this.endingMousePoint = {x: event.clientX, y: event.clientY};
@@ -496,12 +496,12 @@ export default class {
 
                             pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
                                 return _.includes(this.currentElement.pointMeshes, mesh);
-                            }, false, this.Map.playerCamera);
+                            }, false, this.playerCamera);
 
                             if (pickInfo.hit) {
 
                                 //Добавляем элемент в общую базу элементов
-                                this.Map.elements.push(this.currentElement);
+                                this.scene.elements.push(this.currentElement);
 
                                 this.unsetCurrentElement();
 
@@ -519,7 +519,7 @@ export default class {
                             pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
                                 //Только элементы на которые можно монтировать
                                 return this.currentElement.canBeMountedOn(mesh.element);
-                            }, false, this.Map.playerCamera);
+                            }, false, this.playerCamera);
 
                             if (pickInfo.hit) {
                                 //Добавляем точку в линию
@@ -551,11 +551,11 @@ export default class {
                 pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
 
                     //Проверяем что фигура под курсором принадлежит одному из элементов
-                    return _.filter(this.Map.elements, (element) => {
+                    return _.filter(this.scene.elements, (element) => {
                         return _.eq(element.mesh, mesh)
                     });
 
-                }, false, this.Map.playerCamera);
+                }, false, this.playerCamera);
 
                 if (pickInfo.hit) {
                     //Назначаем выбранный элемент активным
@@ -574,7 +574,7 @@ export default class {
         if (this.currentElement) {
             //Сохраняем состояние элемента после действия
             //if (this.undoItemId !== null) {
-            //    this.undoItemId = this.Map.undoStack.fillUndoItem(this.undoItemId, 'edit');
+            //    this.undoItemId = this.scene.undoStack.fillUndoItem(this.undoItemId, 'edit');
             //    this.undoItemId = null;
             //}
         }
@@ -594,7 +594,7 @@ export default class {
      */
     onMiddlePointerUp(event) {
         //Восстанавливаем состояние
-        this.Map.undoStack.undo();
+        //this.scene.undoStack.undo();
     }
 
     /**
@@ -610,21 +610,21 @@ export default class {
      * @param event
      */
     onRightPointerUp(event) {
-        this.Map.undoStack.redo();
+        //this.scene.undoStack.redo();
     }
 
     /**
      * Отключить управление камеры
      */
     disableCameraControl() {
-        this.Map.scene.activeCamera.detachControl(this.Map.canvas);
+        this.playerCamera.detachControl(this.scene.getEngine().getRenderingCanvas());
     }
 
     /**
      * Включить управление камеры
      */
     enableCameraControl() {
-        this.Map.scene.activeCamera.attachControl(this.Map.canvas, false);
+        this.playerCamera.attachControl(this.scene.getEngine().getRenderingCanvas(), false);
     }
 
     /**
@@ -638,10 +638,10 @@ export default class {
             this.destroySupportPlane();
         }
 
-        this.supportPlane = BABYLON.Mesh.CreatePlane("supportPlane", 100.0, this.Map.scene, false, BABYLON.Mesh.FRONTSIDE);
+        this.supportPlane = BABYLON.Mesh.CreatePlane("supportPlane", 100.0, this.scene, false, BABYLON.Mesh.FRONTSIDE);
 
         //Настройка материала плоскости (используется для дебага)
-        this.supportPlane.material = new BABYLON.StandardMaterial('mat', this.Map.scene);
+        this.supportPlane.material = new BABYLON.StandardMaterial('mat', this.scene);
         this.supportPlane.material.diffuseColor = new BABYLON.Color3(1, 0, 0);
         this.supportPlane.material.alpha = 0.3;
         this.supportPlane.material.backFaceCulling = false;
@@ -688,8 +688,8 @@ export default class {
      * @returns {*}
      */
     getPointOnSupportPlane() {
-        let scene = this.Map.scene;
-        let camera = this.Map.playerCamera;
+        let scene = this.scene;
+        let camera = this.playerCamera;
 
         let pickinfo = scene.pick(scene.pointerX, scene.pointerY, (mesh) => {
             return _.eq(mesh, this.supportPlane);
@@ -711,7 +711,7 @@ export default class {
         this.hideControl();
 
         //Отключаем подсветку для всех элементов
-        _.each(this.Map.elements, (element) => {
+        _.each(this.scene.elements, (element) => {
             element.disableHighlight();
         });
 
@@ -758,7 +758,7 @@ export default class {
      * Подсветить элементы на которые можно смонтировать
      */
     colorMountCompatibleElements() {
-        _.each(this.Map.elements, (element) => {
+        _.each(this.scene.elements, (element) => {
             if (this.currentElement.canBeMountedOn(element)) {
                 element.colorMountCompatible();
             } else {
@@ -771,7 +771,7 @@ export default class {
      * Снять подсветку возможности монтировать
      */
     unColorMountCompatibleElements() {
-        _.each(this.Map.elements, (element) => {
+        _.each(this.scene.elements, (element) => {
             element.unColor();
         })
     }
@@ -852,7 +852,7 @@ export default class {
     }
 
     showControlAxises(size) {
-        let scene = this.Map.scene;
+        let scene = this.scene;
         let mesh = this.currentElement.mesh;
 
         //Создаем ось X
@@ -887,7 +887,7 @@ export default class {
     showMoveAxis() {
 
         let mesh = this.currentElement.mesh;
-        let scene = this.Map.scene;
+        let scene = this.scene;
 
         let size = 2;
 
@@ -933,7 +933,7 @@ export default class {
     showRotateAxis() {
 
         let mesh = this.currentElement.mesh;
-        let scene = this.Map.scene;
+        let scene = this.scene;
 
         let size = 2;
 
@@ -1003,7 +1003,7 @@ export default class {
      */
     showDragCursor() {
         let mesh = this.currentElement.mesh;
-        let scene = this.Map.scene;
+        let scene = this.scene;
 
         let size = 2;
 
@@ -1031,7 +1031,7 @@ export default class {
 
     showLinePoints() {
         let mesh = this.currentElement.mesh;
-        let scene = this.Map.scene;
+        let scene = this.scene;
     }
 
     /**
@@ -1046,7 +1046,7 @@ export default class {
         this.showControl();
 
         //Меняем состояние кнопки интерфейса
-        uiBoxActions.setControlMode(mode, false);
+        mapUiBoxActions.setControlMode(mode, false);
     }
 
     /**
@@ -1070,7 +1070,7 @@ export default class {
 
         //Меняем размер фигур управления в зависимости от удаленности камеры
         _.each(this.controlMeshes, (mesh) => {
-            let scale = BABYLON.Vector3.Distance(this.Map.playerCamera.position, this.currentElement.mesh.position) / 15;
+            let scale = BABYLON.Vector3.Distance(this.playerCamera.position, this.currentElement.mesh.position) / 15;
             mesh.scaling = new BABYLON.Vector3(scale, scale, scale);
         })
 

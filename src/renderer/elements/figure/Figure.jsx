@@ -2,8 +2,8 @@ import AbstractElement from '../AbstractElement';
 
 export default class extends AbstractElement {
 
-    constructor(Map, elementData) {
-        super(Map, elementData);
+    constructor(scene, elementData) {
+        super(scene, elementData);
 
         this._init();
     }
@@ -16,7 +16,7 @@ export default class extends AbstractElement {
             //Иначе используем модель типа
             if (this.type.default_model) {
                 //Только если модель для данного типа загружена
-                this.mesh = this.Map.models[this.type.default_model].createInstance(this._id);
+                this.mesh = this.scene.models[this.type.default_model].createInstance(this._id);
                 this.mesh.scaling = new BABYLON.Vector3(1, 1, 1);
 
                 let elementPosition = this.data.location.position;
@@ -40,7 +40,7 @@ export default class extends AbstractElement {
         if (highlightRelated){
 
             //Обходим элементы системы в поисках потомков
-            _.each(this.Map.elements, (element) => {
+            _.each(this.scene.elements, (element) => {
                 if (_.eq(element.parent, this)){
                     //И подсвечиваем их и их потомков
                     element.enableHighlight(true);
@@ -57,7 +57,7 @@ export default class extends AbstractElement {
 
         //Если подсвечены родственные элементе - обходим все элементы системы
         if (highlightRelated){
-            _.each(this.Map.elements, (element) => {
+            _.each(this.scene.elements, (element) => {
                 element.disableHighlight();
             });
         } else {

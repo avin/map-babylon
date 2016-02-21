@@ -6,8 +6,8 @@ import Building from './Figure/Building'
 
 export default class {
 
-    constructor(Map) {
-        this.Map = Map;
+    constructor(scene) {
+        this.scene = scene;
     }
 
     /**
@@ -29,27 +29,27 @@ export default class {
             case 'special':
                 switch (type.code_class) {
                     case 'sky':
-                        element = new Sky(this.Map, elementData);
+                        element = new Sky(this.scene, elementData);
                         break;
 
                     case 'ground':
-                        element = new Ground(this.Map, elementData);
+                        element = new Ground(this.scene, elementData);
                         break;
                 }
                 break;
 
             case 'figure':
-                element = new Figure(this.Map, elementData);
+                element = new Figure(this.scene, elementData);
                 break;
 
             case 'line':
-                element = new Line(this.Map, elementData);
+                element = new Line(this.scene, elementData);
                 break;
         }
 
         //Добавляем элемент в общую базу элементов
         if (element) {
-            this.Map.elements.push(element);
+            this.scene.elements.push(element);
         }
         return element;
     }
@@ -59,6 +59,6 @@ export default class {
      * @param typeId
      */
     getTypeById(typeId) {
-        return this.Map.typeCatalog[typeId];
+        return this.scene.typeCatalog[typeId];
     }
 }

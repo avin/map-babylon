@@ -1,18 +1,17 @@
-import colorHelper from '../Helpers/color'
-
+import {color} from '../../helpers'
 import {VISIBILITY} from '../../constants'
 
 export default class Abstract {
 
-    constructor(Map, elementData) {
+    constructor(scene, elementData) {
         if (new.target === Abstract) {
             throw new TypeError("Cannot construct Abstract instances directly");
         }
 
-        this.Map = Map;
+        this.scene = scene;
         this.data = elementData;
         this._id = elementData._id;
-        this.type = this.Map.typeCatalog[this.data.type_id];
+        this.type = this.scene.typeCatalog[this.data.type_id];
 
         this.mesh = null; //Фигура элемента
 
@@ -144,7 +143,7 @@ export default class Abstract {
         }
 
         //Убиваем всех потомков элемента
-        _.each(this.Map.elements, (element) => {
+        _.each(this.scene.elements, (element) => {
             if (element) {
                 if (element.isChildOf(this)) {
                     element.remove();
@@ -153,7 +152,7 @@ export default class Abstract {
         });
 
         //Убираем элемент из общей базы элементов
-        _.remove(this.Map.elements, (element) => {
+        _.remove(this.scene.elements, (element) => {
             return element === this;
         });
     }
@@ -232,13 +231,13 @@ export default class Abstract {
      * @returns {*|BABYLON.Color3.FromInts}
      */
     setMaterial(specialColor) {
-        let typeStyleColor = specialColor ? specialColor : colorHelper.hexColorToBabylonColor3(_.get(this.getType(), 'style.color', '#FFFFFF'));
+        let typeStyleColor = specialColor ? specialColor : color.hexColorToBabylonColor3(_.get(this.getType(), 'style.color', '#FFFFFF'));
 
         if (this.mesh){
             //Если фигура является инстансом - работаем с исходной фигурой
             let mesh = this.mesh.sourceMesh ? this.mesh.sourceMesh : this.mesh;
 
-            mesh.material = new BABYLON.StandardMaterial('material', this.Map.scene);
+            mesh.material = new BABYLON.StandardMaterial('material', this.scene);
             mesh.material.glossiness = 0.2;
 
             mesh.material.diffuseColor = typeStyleColor;

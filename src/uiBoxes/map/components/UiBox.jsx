@@ -1,13 +1,13 @@
 import React from 'react';
 import Reflux from 'reflux';
-import {CONTROL_MODES, VIEW_MODES} from '../../constants'
+import {CONTROL_MODES, VIEW_MODES} from '../../../constants'
 import UiGroup  from './UiGroup';
 
-import uiBoxActions from '../actions/uiBoxActions'
-import uiBoxStore from '../stores/uiBoxStore'
+import mapUiBoxActions from '../actions/mapUiBoxActions'
+import mapUiBoxStore from '../stores/mapUiBoxStore'
 
 export default React.createClass({
-    mixins: [Reflux.connect(uiBoxStore, "data")],
+    mixins: [Reflux.connect(mapUiBoxStore, "data")],
     render(){
 
         let groupControlMode = [
@@ -15,19 +15,19 @@ export default React.createClass({
                 name: 'Перемещение по осям',
                 icon: 'icon_Cascade_Axis_40x.png',
                 value: CONTROL_MODES.MOVE,
-                action: uiBoxActions.setControlMode
+                action: mapUiBoxStore.setControlMode
             },
             {
                 name: 'Вращение',
                 icon: 'icon_rotateb_40x.png',
                 value: CONTROL_MODES.ROTATE,
-                action: uiBoxActions.setControlMode
+                action: mapUiBoxStore.setControlMode
             },
             {
                 name: 'Drag\'n\'Drop',
                 icon: 'icon_BlueprintEditor_Components_40x.png',
                 value: CONTROL_MODES.DRAG,
-                action: uiBoxActions.setControlMode
+                action: mapUiBoxStore.setControlMode
             }
         ];
 
@@ -36,25 +36,25 @@ export default React.createClass({
                 name: 'Тела',
                 icon: 'icon_box_40x.png',
                 value: VIEW_MODES.CLASSIC,
-                action: uiBoxActions.setViewMode
+                action: mapUiBoxStore.setViewMode
             },
             {
                 name: 'Тела с гранями',
                 icon: 'icon_Mode_BSP_40x.png',
                 value: VIEW_MODES.CLASSIC_WITH_EDGES,
-                action: uiBoxActions.setViewMode
+                action: mapUiBoxStore.setViewMode
             },
             {
                 name: 'Только грани',
                 icon: 'icon_bspmode_40x.png',
                 value: VIEW_MODES.EDGES,
-                action: uiBoxActions.setViewMode
+                action: mapUiBoxStore.setViewMode
             },
             {
                 name: 'Отладочные грани',
                 icon: 'icon_PhAT_NewBody_40x.png',
                 value: VIEW_MODES.DEBUG,
-                action: uiBoxActions.setViewMode
+                action: mapUiBoxStore.setViewMode
             }
         ];
 
