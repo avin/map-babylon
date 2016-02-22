@@ -22,7 +22,7 @@ export default class {
         this.activeScene = null;
 
         //Событие изменения размера канваса
-        window.addEventListener("resize", () => {
+        window.addEventListener('resize', () => {
             this.engine.resize();
         });
     }

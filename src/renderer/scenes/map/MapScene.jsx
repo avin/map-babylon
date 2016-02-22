@@ -57,7 +57,7 @@ export default class extends Scene {
             //Если у типа есть модель
             let modelName = _.get(type, 'default_model');
             if (modelName) {
-                let meshTask = loader.addMeshTask(modelName, "", "./assets/models/", `${modelName}.obj`);
+                let meshTask = loader.addMeshTask(modelName, '', './assets/models/', `${modelName}.obj`);
                 meshTask.onSuccess = (t) => {
                     //Добавляем модель в единый массив
                     this.models[modelName] = BABYLON.Mesh.MergeMeshes(t.loadedMeshes);
@@ -127,7 +127,7 @@ export default class extends Scene {
     _initCameras(){
         //Главная камера
         let playerCameraOptions = {};
-        this.playerCamera = new PlayerCamera("PlayerCamera", new BABYLON.Vector3(0.0, 0.0, 0.0), this, playerCameraOptions);
+        this.playerCamera = new PlayerCamera('PlayerCamera', new BABYLON.Vector3(0.0, 0.0, 0.0), this, playerCameraOptions);
         this.activeCameras.push(this.playerCamera);
 
         //Привязываем управление к камере
@@ -147,10 +147,10 @@ export default class extends Scene {
      */
     _initLights(){
         let mainLightOptions = {};
-        this.mainLight = new MainLight("MainLight", new BABYLON.Vector3(-1, -1, 1), this, mainLightOptions);
+        this.mainLight = new MainLight('MainLight', new BABYLON.Vector3(-1, -1, 1), this, mainLightOptions);
 
         let cameraLightOptions = {};
-        this.cameraLight = new CameraLight("cameraLight", new BABYLON.Vector3(1, 10, 1), this, cameraLightOptions);
+        this.cameraLight = new CameraLight('cameraLight', new BABYLON.Vector3(1, 10, 1), this, cameraLightOptions);
     }
 
     /**
@@ -303,25 +303,25 @@ export default class extends Scene {
         this.setControlMode(CONTROL_MODES.APPEND);
 
         let newElementData = {
-            "_id": 4,
-            "type_id": elementType._id,
-            "properties": [],
-            "parent": 1,
-            "location": {
-                "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
+            _id: 4,
+            type_id: elementType._id,
+            properties: [],
+            parent: 1,
+            location: {
+                position: {
+                    x: 0,
+                    y: 0,
+                    z: 0
                 },
-                "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
+                rotation: {
+                    x: 0,
+                    y: 0,
+                    z: 0
                 }
             },
-            "custom_model": false,
-            "history": [],
-            "states": []
+            custom_model: false,
+            history: [],
+            states: []
         };
 
         let appendingElement = this.elementDispatcher.createElement(newElementData);

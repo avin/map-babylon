@@ -2,7 +2,7 @@ export default {
 
     create(Map, options = {}){
 
-        let camera = new BABYLON.ArcRotateCamera("ArcRotateCamera", 1, 0.8, 10, new BABYLON.Vector3(0, 0, 0), Map.complexEditorScene);
+        let camera = new BABYLON.ArcRotateCamera('ArcRotateCamera', 1, 0.8, 10, new BABYLON.Vector3(0, 0, 0), Map.complexEditorScene);
         camera.speed = options.speed || 10;
         camera.angularSensibilityX  = options.angularSensibility || 1000;
         camera.angularSensibilityY  = options.angularSensibility || 1000;

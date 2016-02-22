@@ -42,7 +42,7 @@ export default class extends AbstractElement {
         let drawDistance = 1000;
 
         // Создаем объект
-        this.mesh = new BABYLON.Mesh.CreateGround("ground", drawDistance, drawDistance, 50, this.scene);
+        this.mesh = new BABYLON.Mesh.CreateGround('ground', drawDistance, drawDistance, 50, this.scene);
 
         this.setMaterial(this.subColor);
     }
@@ -84,19 +84,19 @@ export default class extends AbstractElement {
         let zmax = maxTilePixelData.y;
 
         let precision = {
-            "w": 1,
-            "h": 1
+            w: 1,
+            h: 1
         };
 
         let subdivisions = {
-            'h': 11,
-            'w': 11
+            h: 11,
+            w: 11
         };
 
-        this.mesh = new BABYLON.Mesh.CreateTiledGround("ground", xmin, zmin, xmax, zmax, subdivisions, precision, this.scene);
+        this.mesh = new BABYLON.Mesh.CreateTiledGround('ground', xmin, zmin, xmax, zmax, subdivisions, precision, this.scene);
 
         //Создаем мультиматериала
-        let multimat = new BABYLON.MultiMaterial("multi", this.scene);
+        let multimat = new BABYLON.MultiMaterial('multi', this.scene);
 
         //Создаем тайловый материал
         let xTileBase = tiles.xMin;
@@ -104,7 +104,7 @@ export default class extends AbstractElement {
         for (let row = 0; row < subdivisions.h; row++) {
             for (let col = 0; col < subdivisions.w; col++) {
                 let material = new BABYLON.StandardMaterial(
-                    "material" + row + "-" + col,
+                    'material' + row + '-' + col,
                     this.scene
                 );
                 material.diffuseTexture = new BABYLON.Texture(

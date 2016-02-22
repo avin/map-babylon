@@ -1,5 +1,5 @@
 import {calc} from '../../../../helpers';
-import mapUiBoxActions from '../../../../uiBoxes/map/actions/mapUiBoxActions'
+import modeButtonsActions from '../../../../ui/modeButtons/actions/modeButtonsActions'
 import {KEY_CODES, CONTROL_MODES} from '../../../../constants';
 
 export default class {
@@ -134,20 +134,20 @@ export default class {
     _enableClickInteractionControl() {
 
         //Отключаем стандартное контексное меню
-        this.scene.getEngine().getRenderingCanvas().addEventListener("contextmenu", (event) => {
+        this.scene.getEngine().getRenderingCanvas().addEventListener('contextmenu', (event) => {
             event.preventDefault()
         }, false);
 
         //Обработчики событий мыши
-        this.scene.getEngine().getRenderingCanvas().addEventListener("pointerdown", this.onPointerDown.bind(this), false);
-        this.scene.getEngine().getRenderingCanvas().addEventListener("pointerup", this.onPointerUp.bind(this), false);
-        this.scene.getEngine().getRenderingCanvas().addEventListener("pointermove", this.onPointerMove.bind(this), false);
+        this.scene.getEngine().getRenderingCanvas().addEventListener('pointerdown', this.onPointerDown.bind(this), false);
+        this.scene.getEngine().getRenderingCanvas().addEventListener('pointerup', this.onPointerUp.bind(this), false);
+        this.scene.getEngine().getRenderingCanvas().addEventListener('pointermove', this.onPointerMove.bind(this), false);
 
         //Снимаем обработчики при удалении сцены
         this.scene.onDispose = () => {
-            this.scene.getEngine().getRenderingCanvas().removeEventListener("pointerdown", this.onPointerDown);
-            this.scene.getEngine().getRenderingCanvas().removeEventListener("pointerup", this.onPointerUp);
-            this.scene.getEngine().getRenderingCanvas().removeEventListener("pointermove", this.onPointerMove);
+            this.scene.getEngine().getRenderingCanvas().removeEventListener('pointerdown', this.onPointerDown);
+            this.scene.getEngine().getRenderingCanvas().removeEventListener('pointerup', this.onPointerUp);
+            this.scene.getEngine().getRenderingCanvas().removeEventListener('pointermove', this.onPointerMove);
         }
     }
 
@@ -638,7 +638,7 @@ export default class {
             this.destroySupportPlane();
         }
 
-        this.supportPlane = BABYLON.Mesh.CreatePlane("supportPlane", 100.0, this.scene, false, BABYLON.Mesh.FRONTSIDE);
+        this.supportPlane = BABYLON.Mesh.CreatePlane('supportPlane', 100.0, this.scene, false, BABYLON.Mesh.FRONTSIDE);
 
         //Настройка материала плоскости (используется для дебага)
         this.supportPlane.material = new BABYLON.StandardMaterial('mat', this.scene);
@@ -657,7 +657,7 @@ export default class {
             this.supportPlane.rotation = rotation;
         }
 
-        //Сохраняем "нулевую" точку на вспомогательной плоскости
+        //Сохраняем 'нулевую' точку на вспомогательной плоскости
         this.supportPlane.zeroPoint = parentMesh.getAbsolutePosition().clone();
 
         /**
@@ -856,7 +856,7 @@ export default class {
         let mesh = this.currentElement.mesh;
 
         //Создаем ось X
-        let axisX = BABYLON.Mesh.CreateLines("axisX", [
+        let axisX = BABYLON.Mesh.CreateLines('axisX', [
             new BABYLON.Vector3.Zero(),
             new BABYLON.Vector3(size, 0, 0)
         ], scene);
@@ -864,7 +864,7 @@ export default class {
         axisX.color = new BABYLON.Color3(1, 0, 0);
 
         //Создаем ось Y
-        let axisY = BABYLON.Mesh.CreateLines("axisY", [
+        let axisY = BABYLON.Mesh.CreateLines('axisY', [
             new BABYLON.Vector3.Zero(),
             new BABYLON.Vector3(0, size, 0)
         ], scene);
@@ -872,7 +872,7 @@ export default class {
         axisY.color = new BABYLON.Color3(0, 1, 0);
 
         //Создаем ось Z
-        let axisZ = BABYLON.Mesh.CreateLines("axisZ", [
+        let axisZ = BABYLON.Mesh.CreateLines('axisZ', [
             new BABYLON.Vector3.Zero(),
             new BABYLON.Vector3(0, 0, size)], scene);
         axisZ.position = mesh.absolutePosition;
@@ -895,26 +895,26 @@ export default class {
         this.showControlAxises(size);
 
         //Создаем фигуру editX
-        let xBox = BABYLON.Mesh.CreateBox("editX", size / 10, scene);
+        let xBox = BABYLON.Mesh.CreateBox('editX', size / 10, scene);
         xBox.setPivotMatrix(BABYLON.Matrix.Translation(size, 0, 0));
         xBox.position = mesh.absolutePosition;
-        let xBoxMaterial = new BABYLON.StandardMaterial("boxMaterial", scene);
+        let xBoxMaterial = new BABYLON.StandardMaterial('boxMaterial', scene);
         xBoxMaterial.diffuseColor = BABYLON.Color3.Red();
         xBox.material = xBoxMaterial;
 
         //Создаем фигуру editY
-        let yBox = BABYLON.Mesh.CreateBox("editY", size / 10, scene);
+        let yBox = BABYLON.Mesh.CreateBox('editY', size / 10, scene);
         yBox.setPivotMatrix(BABYLON.Matrix.Translation(0, size, 0));
         yBox.position = mesh.absolutePosition;
-        let yBoxMaterial = new BABYLON.StandardMaterial("boxMaterial", scene);
+        let yBoxMaterial = new BABYLON.StandardMaterial('boxMaterial', scene);
         yBoxMaterial.diffuseColor = BABYLON.Color3.Green();
         yBox.material = yBoxMaterial;
 
         //Создаем фигуру editZ
-        let zBox = BABYLON.Mesh.CreateBox("editZ", size / 10, scene);
+        let zBox = BABYLON.Mesh.CreateBox('editZ', size / 10, scene);
         zBox.setPivotMatrix(BABYLON.Matrix.Translation(0, 0, size));
         zBox.position = mesh.absolutePosition;
-        let zBoxMaterial = new BABYLON.StandardMaterial("boxMaterial", scene);
+        let zBoxMaterial = new BABYLON.StandardMaterial('boxMaterial', scene);
         zBoxMaterial.diffuseColor = BABYLON.Color3.Blue();
         zBox.material = zBoxMaterial;
 
@@ -971,19 +971,19 @@ export default class {
             return size / 15;
         };
 
-        var arcXY = BABYLON.Mesh.CreateTube("arcXY", curveXY, 2, 60, radiusFunction, 2, scene, false, BABYLON.Mesh.FRONTSIDE);
+        var arcXY = BABYLON.Mesh.CreateTube('arcXY', curveXY, 2, 60, radiusFunction, 2, scene, false, BABYLON.Mesh.FRONTSIDE);
         arcXY.position = mesh.absolutePosition;
         arcXY.material = new BABYLON.StandardMaterial('boxMaterial', scene);
         arcXY.material.diffuseColor = new BABYLON.Color3(1, 1, 0);
         arcXY.radius = radiusFunction();
 
-        var arcXZ = BABYLON.Mesh.CreateTube("arcXZ", curveXZ, 2, 60, radiusFunction, 2, scene, false, BABYLON.Mesh.FRONTSIDE);
+        var arcXZ = BABYLON.Mesh.CreateTube('arcXZ', curveXZ, 2, 60, radiusFunction, 2, scene, false, BABYLON.Mesh.FRONTSIDE);
         arcXZ.position = mesh.absolutePosition;
         arcXZ.material = new BABYLON.StandardMaterial('boxMaterial', scene);
         arcXZ.material.diffuseColor = new BABYLON.Color3(1, 0, 1);
         arcXZ.radius = radiusFunction();
 
-        var arcZY = BABYLON.Mesh.CreateTube("arcZY", curveZY, 2, 60, radiusFunction, 2, scene, false, BABYLON.Mesh.FRONTSIDE);
+        var arcZY = BABYLON.Mesh.CreateTube('arcZY', curveZY, 2, 60, radiusFunction, 2, scene, false, BABYLON.Mesh.FRONTSIDE);
         arcZY.position = mesh.absolutePosition;
         arcZY.material = new BABYLON.StandardMaterial('boxMaterial', scene);
         arcZY.material.diffuseColor = new BABYLON.Color3(0, 1, 1);
@@ -1008,9 +1008,9 @@ export default class {
         let size = 2;
 
         //Создаем фигуру
-        let dragCursor = BABYLON.Mesh.CreateSphere("dragCursor", 5, size / 5, scene, false, BABYLON.Mesh.FRONTSIDE);
+        let dragCursor = BABYLON.Mesh.CreateSphere('dragCursor', 5, size / 5, scene, false, BABYLON.Mesh.FRONTSIDE);
         dragCursor.position = mesh.absolutePosition;
-        let dragCursorMaterial = new BABYLON.StandardMaterial("dragCursorMaterial", scene);
+        let dragCursorMaterial = new BABYLON.StandardMaterial('dragCursorMaterial', scene);
         dragCursorMaterial.diffuseColor = BABYLON.Color3.Red();
 
         //Материал не реагирует на свет
@@ -1046,7 +1046,7 @@ export default class {
         this.showControl();
 
         //Меняем состояние кнопки интерфейса
-        mapUiBoxActions.setControlMode(mode, false);
+        modeButtonsActions.setControlMode(mode, false);
     }
 
     /**

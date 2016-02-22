@@ -8,7 +8,7 @@ export default React.createClass({
     render(){
         let currentIcon = this.props.active ? 'fa-chevron-left' : 'fa-chevron-right';
         return (
-            <div className="catalog-toggle" onClick={this.handleClick}>
+            <div className='catalog-toggle' onClick={this.handleClick}>
                 <span className={`fa ${currentIcon}`} />
             </div>
         )

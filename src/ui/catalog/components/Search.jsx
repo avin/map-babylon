@@ -21,8 +21,8 @@ export default React.createClass({
     },
     render(){
         return (
-            <div className="catalog-search">
-                <input type="text" className="form-control" placeholder="Найти..." value={this.state.value}
+            <div className='catalog-search'>
+                <input type='text' className='form-control' placeholder='Найти...' value={this.state.value}
                        onFocus={this.handleFocus} onBlur={this.handleBlur} onKeyPress={this.handleKeyPress} onChange={this.onChange}/>
             </div>
         )

@@ -10,8 +10,8 @@ export default React.createClass({
         catalogActions.toggleShowChildren(this.props.item._id)
     },
     _highlightQuery: function(name, query) {
-        var regex = new RegExp("(" + query + ")", "gi");
-        return "<span>"+name.replace(regex, "<strong>$1</strong>")+"</span>";
+        var regex = new RegExp('(' + query + ')', 'gi');
+        return '<span>'+name.replace(regex, '<strong>$1</strong>')+'</span>';
     },
     handleAppendElement(){
         catalogActions.appendElement(this.props.item)
@@ -23,8 +23,8 @@ export default React.createClass({
         let addButton;
         if (this.props.item.create_enable) {
             addButton = (
-                <button className="btn btn-xs btn-default" onClick={this.handleAppendElement}>
-                    <i className="fa fa-plus"/>
+                <button className='btn btn-xs btn-default' onClick={this.handleAppendElement}>
+                    <i className='fa fa-plus'/>
                 </button>
             )
         }
@@ -32,8 +32,8 @@ export default React.createClass({
         let editButton;
         if (this.props.item.kind === 'complex') {
             editButton = (
-                <button className="btn btn-xs btn-default btn-show-complex-editor" onClick={this.handleEditComplexElement}>
-                    <i className="fa fa-pencil"/>
+                <button className='btn btn-xs btn-default btn-show-complex-editor' onClick={this.handleEditComplexElement}>
+                    <i className='fa fa-pencil'/>
                 </button>
             )
         }
@@ -44,11 +44,11 @@ export default React.createClass({
         if (this.props.haveChildren) {
             if (this.props.item.show_children){
                 showChildren = (
-                    <span><i className="fa fa-angle-down"/></span>
+                    <span><i className='fa fa-angle-down'/></span>
                 )
             } else {
                 showChildren = (
-                    <span><i className="fa fa-angle-right"/></span>
+                    <span><i className='fa fa-angle-right'/></span>
                 )
             }
 
@@ -64,22 +64,22 @@ export default React.createClass({
 
         return (
             <div>
-                <div className="catalog-item row">
-                    <div className="col-xs-1" onClick={this.handleShowChildren}>
+                <div className='catalog-item row'>
+                    <div className='col-xs-1' onClick={this.handleShowChildren}>
                         {showChildren}
                     </div>
 
-                    <div className="col-xs-8" onClick={this.handleShowChildren}>
+                    <div className='col-xs-8' onClick={this.handleShowChildren}>
                         <span dangerouslySetInnerHTML={{__html:this._highlightQuery(this.props.item.name, this.props.searchValue)}} /> {editButton}
                     </div>
-                    <div className="col-xs-1">
+                    <div className='col-xs-1'>
                         {addButton}
                     </div>
-                    <div className="col-xs-1">
+                    <div className='col-xs-1'>
                         <Visibility item={this.props.item}/>
                     </div>
                 </div>
-                <div className="children">
+                <div className='children'>
                     {children}
                 </div>
             </div>

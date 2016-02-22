@@ -1,18 +1,18 @@
 import Reflux from 'reflux';
 import React from 'react';
+import modeButtonsActions from '../actions/modeButtonsActions'
 import {CONTROL_MODES, VIEW_MODES} from '../../../constants'
-import mapUiBoxActions from '../actions/mapUiBoxActions'
 
 
 export default Reflux.createStore({
-    listenables: [mapUiBoxActions],
+    listenables: [modeButtonsActions],
 
     /**
      * Выставит режим управления
      */
     onSetControlMode(controlMode, action=true){
         if (action){
-            window.renderer.scene.map.setControlMode(controlMode);
+            window.app.renderer.scenes.map.setControlMode(controlMode);
         }
 
         this.updateData({controlMode: controlMode});
@@ -23,7 +23,7 @@ export default Reflux.createStore({
      */
     onSetViewMode(viewMode, action=true){
         if (action){
-            window.renderer.scene.map.setViewMode(viewMode);
+            window.app.renderer.scenes.map.setViewMode(viewMode);
         }
 
         this.updateData({viewMode: viewMode});

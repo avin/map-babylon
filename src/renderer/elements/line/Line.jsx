@@ -66,11 +66,11 @@ export default class extends AbstractElement {
              */
 
             //Инче создаем новую
-            this.mesh = BABYLON.Mesh.CreateTube("lines", linePositions, this.tubeRadius, 3, null, 0, this.scene, true);
+            this.mesh = BABYLON.Mesh.CreateTube('lines', linePositions, this.tubeRadius, 3, null, 0, this.scene, true);
             this.mesh.freezeNormals();
 
             //Рисуем линию в виде нитки
-            this.line = BABYLON.Mesh.CreateLines("lines", linePositions, this.scene, true);
+            this.line = BABYLON.Mesh.CreateLines('lines', linePositions, this.scene, true);
 
             this.setMaterial();
 

@@ -1,11 +1,13 @@
 import Renderer from './renderer/Renderer'
-import Catalog from './catalog/Catalog'
-import MapUiBox from './uiBoxes/map/MapUiBox'
+import Catalog from './ui/catalog/Catalog'
+import ModeButtons from './ui/modeButtons/ModeButtons'
 
 let app = global.app = {};
 
 $( document ).ready(function() {
     app.renderer = new Renderer('map-canvas');
-    app.catalog = new Catalog('catalog');
-    app.mapUiBox = new MapUiBox('map-ui-box');
+    app.ui = {
+        catalog: new Catalog('catalog'),
+        modeButtons: new ModeButtons('mode-buttons')
+    };
 });

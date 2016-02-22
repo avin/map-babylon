@@ -7,7 +7,7 @@ export default {
         let line;
 
         for (i = -40; i <= 40; i += 1) {
-            line = BABYLON.Mesh.CreateLines("line", [
+            line = BABYLON.Mesh.CreateLines('line', [
                 new BABYLON.Vector3(-40 + position.x, position.y, i + position.z),
                 new BABYLON.Vector3(40 + position.x, position.y, i + position.z),
             ], scene);
@@ -16,7 +16,7 @@ export default {
             }
             line.alpha = 0.5;
 
-            line = BABYLON.Mesh.CreateLines("line", [
+            line = BABYLON.Mesh.CreateLines('line', [
                 new BABYLON.Vector3(i + position.x, position.y, -40 + position.z),
                 new BABYLON.Vector3(i + position.x, position.y, 40 + position.z),
             ], scene);
@@ -27,7 +27,7 @@ export default {
             line.alpha = 0.5;
 
             // Вертикальная сетка только с градацией высоты
-            line = BABYLON.Mesh.CreateLines("line", [
+            line = BABYLON.Mesh.CreateLines('line', [
                 new BABYLON.Vector3(0 + position.x, i + position.y, -40 + position.z),
                 new BABYLON.Vector3(0 + position.x, i + position.y, 40 + position.z),
             ], scene);

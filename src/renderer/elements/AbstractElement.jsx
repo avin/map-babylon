@@ -5,7 +5,7 @@ export default class Abstract {
 
     constructor(scene, elementData) {
         if (new.target === Abstract) {
-            throw new TypeError("Cannot construct Abstract instances directly");
+            throw new TypeError('Cannot construct Abstract instances directly');
         }
 
         this.scene = scene;
@@ -106,7 +106,7 @@ export default class Abstract {
         //Только если не пытаемся привязать старого родителя
         if (!_.eq(this.parent, parentElement)) {
 
-            //Отвязываем родителя если пытаемся привязаться к "специальному" элементу
+            //Отвязываем родителя если пытаемся привязаться к 'специальному' элементу
             if (parentElement.type.kind == 'special') {
                 this.parent = null;
                 this.mesh.parent = null;

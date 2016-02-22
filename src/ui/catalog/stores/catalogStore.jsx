@@ -1,8 +1,8 @@
 import Reflux from 'reflux';
 import React from 'react';
 import catalogActions from '../actions/catalogActions'
-import typeCatalog from '../../data/type_catalog.json'
-import {VISIBILITY} from '../../constants'
+import typeCatalog from '../../../data/type_catalog.json'
+import {VISIBILITY} from '../../../constants'
 
 export default Reflux.createStore({
     listenables: [catalogActions],
@@ -33,7 +33,7 @@ export default Reflux.createStore({
 
         //Находим элементы удовлетворяющие поиску
         _.each(this.data.catalog, (catalogItem) => {
-            if ((new RegExp("(" + this.data.searchValue + ")", "gi")).test(catalogItem.name)){
+            if ((new RegExp('(' + this.data.searchValue + ')', 'gi')).test(catalogItem.name)){
                 showChildren(catalogItem.parent_id)
             }
         });
@@ -42,7 +42,7 @@ export default Reflux.createStore({
     },
 
     onAppendElement(type){
-        window.app.map.appendElement(type);
+        window.app.renderer.scenes.map.appendElement(type);
     },
 
     /**
@@ -58,7 +58,7 @@ export default Reflux.createStore({
      * @param visibility
      */
     onSetVisibility(catalogItemId, visibility){
-        window.app.map.setVisibilityOfType(catalogItemId, visibility);
+        window.app.renderer.scenes.map.setVisibilityOfType(catalogItemId, visibility);
         this.updateCatalogItem(catalogItemId, {visibility: visibility})
     },
 

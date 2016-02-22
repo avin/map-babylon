@@ -8,7 +8,7 @@ import Content from './Content'
 import Search from './Search'
 
 export default React.createClass({
-    mixins: [Reflux.connect(catalogStore, "data")],
+    mixins: [Reflux.connect(catalogStore, 'data')],
     render(){
         let style = {width: this.state.data.options.showCatalog ? 300 : 0};
 

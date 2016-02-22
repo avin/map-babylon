@@ -20,7 +20,7 @@ export default React.createClass({
 
         let style = {backgroundColor: `rgba(0, 0, 0, ${this.props.level/50})`};
         return (
-            <div className="catalog-content" style={style}>
+            <div className='catalog-content' style={style}>
                 {catalogItems}
             </div>
         )

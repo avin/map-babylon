@@ -42,7 +42,7 @@ export default class extends AbstractElement {
         if (this.mesh){
             this.mesh.dispose(true)
         }
-        this.mesh = BABYLON.Mesh.CreateSphere("skyBox", 100, this.options.distance, this.scene);
+        this.mesh = BABYLON.Mesh.CreateSphere('skyBox', 100, this.options.distance, this.scene);
         this.setMaterial();
     }
 
@@ -56,7 +56,7 @@ export default class extends AbstractElement {
         if (this.mesh){
             this.mesh.dispose(true)
         }
-        this.mesh = BABYLON.Mesh.CreateBox("skyBox", this.options.distance, this.scene);
+        this.mesh = BABYLON.Mesh.CreateBox('skyBox', this.options.distance, this.scene);
         this.mesh.material = this.createTexturedMaterial();
     }
 
@@ -64,10 +64,10 @@ export default class extends AbstractElement {
      * Создать градиентный материал для сферы
      */
     createGradientMaterial() {
-        let material = new BABYLON.ShaderMaterial("gradient", this.scene, "./assets/shaders/gradient", {});
-        material.setFloat("offset", 10);
-        material.setColor3("topColor", BABYLON.Color3.FromInts(0, 119, 255));
-        material.setColor3("bottomColor", BABYLON.Color3.FromInts(240, 240, 255));
+        let material = new BABYLON.ShaderMaterial('gradient', this.scene, './assets/shaders/gradient', {});
+        material.setFloat('offset', 10);
+        material.setColor3('topColor', BABYLON.Color3.FromInts(0, 119, 255));
+        material.setColor3('bottomColor', BABYLON.Color3.FromInts(240, 240, 255));
         material.backFaceCulling = false;
         return material;
     }
@@ -76,7 +76,7 @@ export default class extends AbstractElement {
      * Создать текстурированный материал для коробки
      */
     createTexturedMaterial() {
-        let material = new BABYLON.StandardMaterial("skyBox", this.scene);
+        let material = new BABYLON.StandardMaterial('skyBox', this.scene);
         material.backFaceCulling = false;
         material.reflectionTexture = new BABYLON.CubeTexture(`./assets/textures/${this.options.texture}`, this.scene);
         material.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;

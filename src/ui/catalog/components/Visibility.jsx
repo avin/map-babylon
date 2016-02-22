@@ -1,5 +1,5 @@
 import React from 'react';
-import {VISIBILITY} from '../../constants'
+import {VISIBILITY} from '../../../constants'
 import catalogActions from '../actions/catalogActions'
 
 export default React.createClass({
