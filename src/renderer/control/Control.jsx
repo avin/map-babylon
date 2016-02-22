@@ -1,6 +1,6 @@
-import {calc} from '../../../../helpers';
-import modeButtonsActions from '../../../../ui/modeButtons/actions/modeButtonsActions'
-import {KEY_CODES, CONTROL_MODES} from '../../../../constants';
+import {calc} from '../../helpers';
+import modeButtonsActions from '../../ui/modeButtons/actions/modeButtonsActions'
+import {KEY_CODES, CONTROL_MODES} from '../../constants';
 
 export default class {
 
@@ -1067,13 +1067,11 @@ export default class {
      * Функция отвечающая за инициализацию покадровых действий
      */
     update() {
-
         //Меняем размер фигур управления в зависимости от удаленности камеры
         _.each(this.controlMeshes, (mesh) => {
             let scale = BABYLON.Vector3.Distance(this.playerCamera.position, this.currentElement.mesh.position) / 15;
             mesh.scaling = new BABYLON.Vector3(scale, scale, scale);
         })
-
     }
 
 }

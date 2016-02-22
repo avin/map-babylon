@@ -17,7 +17,7 @@ export default React.createClass({
         catalogActions.appendElement(this.props.item)
     },
     handleEditComplexElement(){
-        window.app.map.openComplexEditorScene()
+        window.app.renderer.setActiveScene('complexEditor');
     },
     render(){
         let addButton;

@@ -8,7 +8,7 @@ import CameraLight from './lights/CameraLight';
 //import filter from './scene/filter';
 //import grid from './scene/grid';
 //import UndoStack from './UndoStack';
-import Control from './control/Control';
+import Control from '../../control/Control';
 import ElementDispatcher from './../../elements/ElementDispatcher';
 
 import {CONTROL_MODES} from '../../../constants'
@@ -47,9 +47,33 @@ export default class extends Scene {
     }
 
     _init() {
-        this._initScene();
+        //Цвет фона
+        this.clearColor = new BABYLON.Color3(0.8, 0.8, 0.8);
 
-        // The loader
+        //Дебаг
+        //this.debugLayer.show();
+
+        //Оптимизация ФПС
+        BABYLON.SceneOptimizer.OptimizeAsync(this, BABYLON.SceneOptimizerOptions.ModerateDegradationAllowed(50),
+            () => {
+                console.log('Optimized ModerateDegradation')
+            },
+            () => {
+                BABYLON.SceneOptimizer.OptimizeAsync(this, BABYLON.SceneOptimizerOptions.HighDegradationAllowed(40),
+                    () => {
+                        console.log('Optimized by HighDegradation')
+                    },
+                    () => {
+                        console.log('Bad FPS!!!');
+                    });
+            });
+
+
+        this._initCameras();
+        this._initLights();
+        this._initControl();
+
+        //Загрузчик ресурсов
         let loader = new BABYLON.AssetsManager(this);
 
         //Загружаем все типовые модели из каталога
@@ -82,43 +106,6 @@ export default class extends Scene {
         loader.load();
     }
 
-    /**
-     * Определяем сцену и узловые элементы сцены
-     * @private
-     */
-    _initScene() {
-        //Цвет фона
-        this.clearColor = new BABYLON.Color3(0.8, 0.8, 0.8);
-
-        //this.debugLayer.show();
-
-        /*
-         ================================================
-         Оптимизация
-         ================================================
-         */
-
-        BABYLON.SceneOptimizer.OptimizeAsync(this, BABYLON.SceneOptimizerOptions.ModerateDegradationAllowed(50),
-            () => {
-                console.log('Optimized ModerateDegradation')
-            },
-            () => {
-                BABYLON.SceneOptimizer.OptimizeAsync(this, BABYLON.SceneOptimizerOptions.HighDegradationAllowed(40),
-                    () => {
-                        console.log('Optimized by HighDegradation')
-                    },
-                    () => {
-                        console.log('Bad FPS!!!');
-                    });
-            });
-
-
-        this._initCameras();
-        this._initLights();
-        this._initControl();
-
-
-    }
 
     /**
      * Инициализация камер

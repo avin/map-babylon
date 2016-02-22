@@ -6,7 +6,7 @@ export default class extends BABYLON.PointLight {
         this.intensity = options.intensity || 0.6;
 
         //Привязываем перемещение светильника к камере
-        this.position = scene.playerCamera.position;
+        this.position = scene.activeCamera.position;
     }
 
 }
