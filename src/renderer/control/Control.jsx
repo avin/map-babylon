@@ -614,20 +614,6 @@ export default class {
     }
 
     /**
-     * Отключить управление камеры
-     */
-    disableCameraControl() {
-        this.playerCamera.detachControl(this.scene.getEngine().getRenderingCanvas());
-    }
-
-    /**
-     * Включить управление камеры
-     */
-    enableCameraControl() {
-        this.playerCamera.attachControl(this.scene.getEngine().getRenderingCanvas(), false);
-    }
-
-    /**
      * Создать вспомогательную плоскость
      * @param parentMesh
      * @param rotation
@@ -782,7 +768,7 @@ export default class {
      */
     setCurrentControlMesh(mesh) {
         //При назначеной фигуре отключаем управление камерой
-        this.disableCameraControl();
+        this.scene.disableControl();
 
         //Назначаем активную фигуру управления
         this.currentControlMesh = mesh;
@@ -799,7 +785,7 @@ export default class {
      */
     unsetCurrentControlMesh() {
         //Включаем обратно управление камерой
-        this.enableCameraControl();
+        this.scene.enableControl();
 
         if (this.currentControlMesh) {
             //Возвращаем оригинальный цвет активной фигуры управления

@@ -201,20 +201,6 @@ export default class extends Scene {
     }
 
     /**
-     * Включить уплавление
-     */
-    enableControl() {
-        //this.control.enableCameraControl();
-    }
-
-    /**
-     * Отключить управление
-     */
-    disableControl() {
-        this.control.disableCameraControl();
-    }
-
-    /**
      * Выставить режим отображения фигур
      * @param mode
      */

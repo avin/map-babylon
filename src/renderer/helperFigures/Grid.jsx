@@ -5,8 +5,6 @@ export default class {
         this.name = name;
         this.scene = scene;
 
-        this.lines = [];
-
         //Абстракная фигура для организации группы
         this.mesh = new BABYLON.AbstractMesh(name, scene);
         this.mesh.position = position;
@@ -22,18 +20,14 @@ export default class {
             //Горизонтальная сетка
             line = this.createLine([-40 + position.x, 40 + position.x], [position.y, position.y], [i + position.z, i + position.z], color, alpha);
             line.parent = this.mesh;
-            this.lines.push(line);
 
             line = this.createLine([i + position.x, i + position.x], [position.y, position.y], [-40 + position.z, 40 + position.z], color, alpha);
             line.parent = this.mesh;
-            this.lines.push(line);
 
             // Вертикальная сетка только с градацией высоты
             line = this.createLine([position.x, position.x], [i + position.y, i + position.y], [-40 + position.z, 40 + position.z], color, alpha);
             line.parent = this.mesh;
-            this.lines.push(line);
         }
-
     }
 
     /**

@@ -45,8 +45,14 @@ export default class {
      * @param sceneName
      */
     setActiveScene(sceneName){
+        //Сначала отключаем управление всеми сценами
+        _.each(this.scenes, (scene) => {
+            scene.disableControl();
+        });
+
         if (this.scenes[sceneName]){
             this.activeScene = this.scenes[sceneName];
+            this.activeScene.enableControl();
             this._runRenderLoop(this.activeScene);
         }
     }

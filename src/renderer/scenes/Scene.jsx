@@ -11,4 +11,18 @@ export default class extends BABYLON.Scene {
         //Объект управления
         this.control = null;
     }
+
+    /**
+     * Отключить управление камеры
+     */
+    disableControl() {
+        this.activeCamera.detachControl(this.getEngine().getRenderingCanvas());
+    }
+
+    /**
+     * Включить управление камеры
+     */
+    enableControl() {
+        this.activeCamera.attachControl(this.getEngine().getRenderingCanvas(), false);
+    }
 }
