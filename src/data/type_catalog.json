@@ -161,25 +161,35 @@
         "kind": "complex",
         "parent_id": 0,
         "create_enable": true,
-        "parts": {
-            "main_kind": 4,
-            "subsidiaries": [
-                {
-                    "kind_id": 4,
-                    "layout": {
-                        "position": {
-                            "x": 0,
-                            "y": 0,
-                            "z": 0
-                        },
-                        "rotation": {
-                            "x": 0,
-                            "y": 0,
-                            "z": 0
-                        }
-                    }
+        "parts": [
+            {
+                "type_id": 4,
+                "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
                 }
-            ]
-        }
+            },
+            {
+                "type_id": 5,
+                "position": {
+                    "x": 0.3,
+                    "y": 2,
+                    "z": 0
+                },
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "parent": 0
+            }
+
+        ]
     }
 ]

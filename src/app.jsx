@@ -1,11 +1,17 @@
-import Map from './map/Map'
-import Catalog from './catalog/Catalog'
-import UiBox from './ui-box/UiBox'
+import Renderer from './renderer/Renderer'
+import Catalog from './ui/catalog/Catalog'
+import ModeButtons from './ui/modeButtons/ModeButtons'
+import TypeEditorControl from './ui/typeEditorControl/TypeEditorControl'
 
 let app = global.app = {};
 
 $( document ).ready(function() {
-    app.map = new Map('map-canvas');
-    app.catalog = new Catalog('catalog');
-    app.uiBox = new UiBox('ui-box');
+    app.renderer = new Renderer('map-canvas');
+    app.ui = {
+        catalog: new Catalog('catalog'),
+        modeButtons: new ModeButtons('mode-buttons'),
+        typeEditorControl: new TypeEditorControl('type-editor-control')
+    };
+
+    app.renderer.setActiveScene('map');
 });
