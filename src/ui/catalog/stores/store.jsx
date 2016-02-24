@@ -42,7 +42,7 @@ export default Reflux.createStore({
     },
 
     onAppendElement(type){
-        window.app.renderer.scenes.map.appendElement(type);
+        window.app.renderer.activeScene.appendElement(type);
     },
 
     /**
@@ -58,7 +58,7 @@ export default Reflux.createStore({
      * @param visibility
      */
     onSetVisibility(catalogItemId, visibility){
-        window.app.renderer.scenes.map.setVisibilityOfType(catalogItemId, visibility);
+        window.app.renderer.activeScene.setVisibilityOfType(catalogItemId, visibility);
         this.updateCatalogItem(catalogItemId, {visibility: visibility})
     },
 

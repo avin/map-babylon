@@ -14,10 +14,9 @@ export default class {
         this.engine.renderer = this;
 
         //Сцены
-        this.scenes = {
-            map: new MapScene(this.engine),
-            typeEditor: new TypeEditorScene(this.engine),
-        };
+        this.scenes = {};
+        this.scenes.map = new MapScene(this.engine);
+        this.scenes.typeEditor = new TypeEditorScene(this.engine);
 
         this.activeScene = null;
 
@@ -33,6 +32,10 @@ export default class {
      * @private
      */
     _runRenderLoop(scene){
+        //Останавливаем рендер-луп для всех сцен
+        this.engine.stopRenderLoop();
+
+        //Включаем рендер-луп для заданной сцены
         if (scene){
             this.engine.runRenderLoop(() => {
                 scene.render();
@@ -50,10 +53,27 @@ export default class {
             scene.disableControl();
         });
 
+        //Вешаем управление на сцену и запускаем её рендер-луп
         if (this.scenes[sceneName]){
             this.activeScene = this.scenes[sceneName];
             this.activeScene.enableControl();
             this._runRenderLoop(this.activeScene);
+        }
+
+        //Показываем соответсвющие сцене ui-компоненты
+        switch(sceneName){
+            case 'map':{
+                $('#type-editor-control').hide();
+                $('#mode-buttons').show();
+                $('#catalog').show();
+                break;
+            }
+            case 'typeEditor':{
+                $('#type-editor-control').show();
+                $('#mode-buttons').show();
+                $('#catalog').show();
+                break;
+            }
         }
     }
 }

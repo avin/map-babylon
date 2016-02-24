@@ -3,7 +3,6 @@ import Ground from './special/Ground'
 import Line from './line/Line'
 import Figure from './figure/Figure'
 import Building from './figure/Building'
-//import Complex from './complex/Complex'
 
 export default class {
 
@@ -52,6 +51,9 @@ export default class {
         if (element) {
             this.scene.elements.push(element);
         }
+
+        //Выставляем отображение элемента в зависимости от натсроек сцены
+        element.setViewMode(this.scene.viewMode);
 
         return element;
     }

@@ -1,5 +1,5 @@
 import {color} from '../../helpers'
-import {VISIBILITY} from '../../constants'
+import {VISIBILITY, VIEW_MODES} from '../../constants'
 
 export default class Abstract {
 
@@ -40,7 +40,7 @@ export default class Abstract {
      */
     setVisibilityDefault() {
         //По умолчанию элемент отображается нормально
-        if (this.visibility === undefined){
+        if (this.visibility === undefined) {
             this.setVisibilityNormal();
         }
     }
@@ -233,7 +233,7 @@ export default class Abstract {
     setMaterial(specialColor) {
         let typeStyleColor = specialColor ? specialColor : color.hexColorToBabylonColor3(_.get(this.getType(), 'style.color', '#FFFFFF'));
 
-        if (this.mesh){
+        if (this.mesh) {
             //Если фигура является инстансом - работаем с исходной фигурой
             let mesh = this.mesh.sourceMesh ? this.mesh.sourceMesh : this.mesh;
 
@@ -248,26 +248,85 @@ export default class Abstract {
         return typeStyleColor;
     }
 
+    setViewMode(mode) {
+        if (this.mesh){
+            switch (mode) {
+                case VIEW_MODES.CLASSIC:
+                {
+
+                    let sourceMesh = this.mesh.sourceMesh || this.mesh;
+                    let mesh = this.mesh;
+
+                    sourceMesh.material.fillMode = 3;
+                    mesh.material.fillMode = 3;
+                    mesh.disableEdgesRendering();
+
+                    break;
+                }
+                case VIEW_MODES.CLASSIC_WITH_EDGES:
+                {
+
+                    let sourceMesh = this.mesh.sourceMesh || this.mesh;
+                    let mesh = this.mesh;
+
+                    sourceMesh.material.fillMode = 3;
+                    mesh.material.fillMode = 3;
+                    mesh.enableEdgesRendering();
+                    mesh.edgesWidth = 3.0;
+                    mesh.edgesColor = new BABYLON.Color4(0, 0, 0, 1);
+
+                    break;
+                }
+                case VIEW_MODES.EDGES:
+                {
+
+                    let sourceMesh = this.mesh.sourceMesh || this.mesh;
+                    let mesh = this.mesh;
+
+                    sourceMesh.material.fillMode = 3;
+                    mesh.material.fillMode = 2;
+                    mesh.enableEdgesRendering();
+                    mesh.edgesWidth = 3.0;
+                    mesh.edgesColor = new BABYLON.Color4(1, 1, 1, 0.8);
+
+                    break;
+                }
+                case VIEW_MODES.DEBUG:
+                {
+
+                    let sourceMesh = this.mesh.sourceMesh || this.mesh;
+                    let mesh = this.mesh;
+
+                    sourceMesh.material.fillMode = 3;
+                    mesh.material.fillMode = 1;
+                    mesh.disableEdgesRendering();
+
+                    break;
+                }
+            }
+        }
+    }
+
     /**
      * Подкрасить как совместимый для монтирования
      */
-    colorMountCompatible(){
-        this.setMaterial(new BABYLON.Color3(0,1,0));
+    colorMountCompatible() {
+        this.setMaterial(new BABYLON.Color3(0, 1, 0));
         this.setVisibility(this.visibility);
     }
 
     /**
      * Подкрасить как несовместимый для монтирования
      */
-    colorMountIncompatible(){
-        this.setMaterial(new BABYLON.Color3(1,1,1));
+    colorMountIncompatible() {
+        this.setMaterial(new BABYLON.Color3(1, 1, 1));
         this.setVisibility(this.visibility);
     }
 
     /**
      * Убрать подкрашивание
      */
-    unColor(){
+    unColor() {
         this.setMaterial();
         this.setVisibility(this.visibility);
     }

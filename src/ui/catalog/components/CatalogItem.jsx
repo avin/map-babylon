@@ -16,8 +16,9 @@ export default React.createClass({
     handleAppendElement(){
         catalogActions.appendElement(this.props.item)
     },
-    handleEditComplexElement(){
+    handleEditType(){
         window.app.renderer.setActiveScene('typeEditor');
+        window.app.renderer.scenes.typeEditor.loadType(this.props.item);
     },
     render(){
         let addButton;
@@ -30,9 +31,9 @@ export default React.createClass({
         }
 
         let editButton;
-        if (this.props.item.kind === 'complex') {
+        if (_.includes(['complex', 'figure'], this.props.item.kind)) {
             editButton = (
-                <button className='btn btn-xs btn-default btn-show-complex-editor' onClick={this.handleEditComplexElement}>
+                <button className='btn btn-xs btn-default btn-show-complex-editor' onClick={this.handleEditType}>
                     <i className='fa fa-pencil'/>
                 </button>
             )

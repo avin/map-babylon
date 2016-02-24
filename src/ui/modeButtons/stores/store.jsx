@@ -23,7 +23,11 @@ export default Reflux.createStore({
      */
     onSetViewMode(viewMode, action=true){
         if (action){
-            window.app.renderer.scenes.map.setViewMode(viewMode);
+            _.each(window.app.renderer.scenes, (scene) => {
+                if (_.isFunction(scene.setViewMode)){
+                    scene.setViewMode(viewMode);
+                }
+            });
         }
 
         this.updateData({viewMode: viewMode});

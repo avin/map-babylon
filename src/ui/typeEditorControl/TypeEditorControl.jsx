@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 
 import store from './stores/store';
 import actions from './actions/actions';
-import Control from './components/Control';
+import ButtonsBox from './components/ButtonsBox';
 
 export default class {
 
@@ -21,7 +21,7 @@ export default class {
 
     _initDom(){
         ReactDOM.render(
-            <Control />,
+            <ButtonsBox />,
             this.dom
         );
     }

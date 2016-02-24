@@ -75,18 +75,25 @@
                 background-color: rgba(0,0,0,0.1);
             }
 
-            .ui-box{
+            #mode-buttons{
                 position: fixed;
+                top: 20px;
+                right: 20px;
+            }
+
+            #type-editor-control{
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .ui-box{
                 color: white;
                 font-family: monospace;
                 font-size: 12px;
                 z-index: 1000;
-                
-                opacity: .8;
+                opacity: .7;
                 border-radius: 10px;
-                /* padding: 10px; */
-                top: 20px;
-                right: 20px;
             }
             .ui-box .btn-group{
                 margin-right: 10px;
@@ -111,9 +118,9 @@
     </head>
     <body>
 
-        <div id="catalog"></div>
-
-        <div id="mode-buttons"></div>
+        <div id="catalog" style="display: none;"></div>
+        <div id="mode-buttons" style="display: none;"></div>
+        <div id="type-editor-control" style="display: none;"></div>
 
         <canvas id="map-canvas"></canvas>
 
