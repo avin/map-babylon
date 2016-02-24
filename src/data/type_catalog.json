@@ -159,7 +159,7 @@
         "_id": 7,
         "name": "Столб с опорами",
         "kind": "complex",
-        "parent_id": 1,
+        "parent_id": 0,
         "create_enable": true,
         "parts": [
             {

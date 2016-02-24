@@ -3,7 +3,7 @@ import typeCatalog from '../data/type_catalog.json'
 import elementCatalog from '../data/element_catalog.json'
 
 //Сцены
-import ComplexEditorScene from './scenes/complexEditor/ComplexEditorScene';
+import TypeEditorScene from './scenes/typeEditor/TypeEditorScene';
 import MapScene from './scenes/map/MapScene';
 
 export default class {
@@ -16,7 +16,7 @@ export default class {
         //Сцены
         this.scenes = {
             map: new MapScene(this.engine),
-            complexEditor: new ComplexEditorScene(this.engine),
+            typeEditor: new TypeEditorScene(this.engine),
         };
 
         this.activeScene = null;

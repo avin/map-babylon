@@ -12,7 +12,7 @@ export default class extends Scene {
         super(engine);
 
         //Персональное имя сцены
-        this.name = 'complexEditor';
+        this.name = 'typeEditor';
 
         this._init();
     }
