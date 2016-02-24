@@ -111,7 +111,7 @@ export default class extends Scene {
      * Инициализация камер
      * @private
      */
-    _initCameras(){
+    _initCameras() {
         //Главная камера
         let playerCameraOptions = {};
         this.playerCamera = new PlayerCamera('PlayerCamera', new BABYLON.Vector3(0.0, 0.0, 0.0), this, playerCameraOptions);
@@ -132,7 +132,7 @@ export default class extends Scene {
      * Инициализация светильников
      * @private
      */
-    _initLights(){
+    _initLights() {
         let mainLightOptions = {};
         this.mainLight = new MainLight('MainLight', new BABYLON.Vector3(-1, -1, 1), this, mainLightOptions);
 
@@ -144,7 +144,7 @@ export default class extends Scene {
      * Инициализация управления
      * @private
      */
-    _initControl(){
+    _initControl() {
         this.control = new Control(this);
     }
 
@@ -181,10 +181,10 @@ export default class extends Scene {
 
         this.control.update();
 
+        ////Вращающаяся вокруг точки камера
         //this.playerCamera.position.x = Math.cos(time/2)*10;
         //this.playerCamera.position.y = Math.cos(time)*5 + 6;
         //this.playerCamera.position.z = Math.sin(time/2)*10;
-        //
         //this.playerCamera.setTarget(new BABYLON.Vector3(0,0,0));
     }
 
@@ -275,8 +275,16 @@ export default class extends Scene {
 
         this.setControlMode(CONTROL_MODES.APPEND);
 
+        //Если имеем дело с комплексным элементом - используем другую функцию
+        if (elementType.kind === 'complex') {
+            return this.appendComplexElement(elementType);
+        } else {
+            return this.appendSingleElement(elementType);
+        }
+    }
+
+    appendSingleElement(elementType){
         let newElementData = {
-            _id: 4,
             type_id: elementType._id,
             properties: [],
             parent: 1,
@@ -300,5 +308,54 @@ export default class extends Scene {
         let appendingElement = this.elementDispatcher.createElement(newElementData);
 
         this.control.setCurrentElement(appendingElement);
+
+        return appendingElement;
     }
+
+    appendComplexElement(elementType){
+        let parts = [];
+
+        //Создаем элемент по каждой части элемента
+        _.each(elementType.parts, (part) => {
+
+            let partElementType = this.typeCatalog[part.type_id];
+
+            let newElementData = {
+                type_id: partElementType._id,
+                properties: [],
+                parent: 1,
+                location: {
+                    position: {
+                        x: 0,
+                        y: 0,
+                        z: 0
+                    },
+                    rotation: {
+                        x: 0,
+                        y: 0,
+                        z: 0
+                    }
+                },
+                custom_model: false,
+                history: [],
+                states: []
+            };
+
+            let appendingElement = this.elementDispatcher.createElement(newElementData);
+
+            //Делаем привязку к родительскому элементу
+            if (part.parent !== undefined){
+                let parentElement = parts[part.parent];
+                appendingElement.setParent(parentElement);
+
+                appendingElement.mesh.position = new BABYLON.Vector3(part.position.x, part.position.y, part.position.z);
+            }
+
+            parts.push(appendingElement);
+        });
+
+        //Первый элемент в стеке комплексного элемента всегда является родительским
+        this.control.setCurrentElement(parts[0]);
+    }
+
 }

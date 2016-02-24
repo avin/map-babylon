@@ -1,5 +1,5 @@
 import {calc} from '../../helpers';
-import modeButtonsActions from '../../ui/modeButtons/actions/modeButtonsActions'
+import modeButtonsActions from '../../ui/modeButtons/actions/actions'
 import {KEY_CODES, CONTROL_MODES} from '../../constants';
 
 export default class {

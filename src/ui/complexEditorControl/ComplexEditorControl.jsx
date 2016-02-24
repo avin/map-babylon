@@ -1,16 +1,18 @@
 import Reflux from 'reflux';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Catalog from './components/Catalog';
-import catalogActions from './actions/actions';
+
+import store from './stores/store';
+import actions from './actions/actions';
+import Control from './components/Control';
 
 export default class {
 
-    constructor(catalogDomId) {
-        this.dom = document.getElementById(catalogDomId);
+    constructor(ModeButtonsDomId) {
+        this.dom = document.getElementById(ModeButtonsDomId);
 
         //Добавляем все reflux экшны в текущий класс
-        _.each(catalogActions, (action, actionName) => {
+        _.each(actions, (action, actionName) => {
             this[actionName] = action;
         });
 
@@ -19,7 +21,7 @@ export default class {
 
     _initDom(){
         ReactDOM.render(
-            <Catalog />,
+            <Control />,
             this.dom
         );
     }

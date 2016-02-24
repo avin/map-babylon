@@ -3,8 +3,8 @@ import Reflux from 'reflux';
 import {CONTROL_MODES, VIEW_MODES} from '../../../constants'
 import ButtonsGroup  from './ButtonsGroup';
 
-import modeButtonsActions from '../actions/modeButtonsActions'
-import modeButtonsStore from '../stores/modeButtonsStore'
+import modeButtonsActions from '../actions/actions'
+import modeButtonsStore from '../stores/store'
 
 export default React.createClass({
     mixins: [Reflux.connect(modeButtonsStore, 'data')],

@@ -1,6 +1,6 @@
 import Reflux from 'reflux';
 import React from 'react';
-import modeButtonsActions from '../actions/modeButtonsActions'
+import modeButtonsActions from '../actions/actions'
 import {CONTROL_MODES, VIEW_MODES} from '../../../constants'
 
 

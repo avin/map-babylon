@@ -1,7 +1,7 @@
 import React from 'react';
 import Reflux from 'reflux';
-import catalogActions from '../actions/catalogActions'
-import catalogStore from '../stores/catalogStore'
+import catalogActions from '../actions/actions'
+import catalogStore from '../stores/store'
 
 import Toggle from './Toggle'
 import Content from './Content'

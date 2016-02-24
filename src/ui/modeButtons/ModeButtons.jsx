@@ -2,8 +2,8 @@ import Reflux from 'reflux';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import modeButtonsStore from './stores/modeButtonsStore';
-import modeButtonsActions from './actions/modeButtonsActions';
+import modeButtonsStore from './stores/store';
+import modeButtonsActions from './actions/actions';
 import ButtonsBox from './components/ButtonsBox';
 
 export default class {

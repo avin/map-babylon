@@ -1,8 +1,9 @@
-import Sky from './Special/Sky'
-import Ground from './Special/Ground'
-import Line from './Line/Line'
-import Figure from './Figure/Figure'
-import Building from './Figure/Building'
+import Sky from './special/Sky'
+import Ground from './special/Ground'
+import Line from './line/Line'
+import Figure from './figure/Figure'
+import Building from './figure/Building'
+//import Complex from './complex/Complex'
 
 export default class {
 
@@ -51,6 +52,7 @@ export default class {
         if (element) {
             this.scene.elements.push(element);
         }
+
         return element;
     }
 
@@ -61,4 +63,5 @@ export default class {
     getTypeById(typeId) {
         return this.scene.typeCatalog[typeId];
     }
+
 }

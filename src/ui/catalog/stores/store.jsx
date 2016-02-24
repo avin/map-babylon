@@ -1,6 +1,6 @@
 import Reflux from 'reflux';
 import React from 'react';
-import catalogActions from '../actions/catalogActions'
+import catalogActions from '../actions/actions'
 import typeCatalog from '../../../data/type_catalog.json'
 import {VISIBILITY} from '../../../constants'
 

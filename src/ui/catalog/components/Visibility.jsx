@@ -1,6 +1,6 @@
 import React from 'react';
 import {VISIBILITY} from '../../../constants'
-import catalogActions from '../actions/catalogActions'
+import catalogActions from '../actions/actions'
 
 export default React.createClass({
     changeVisibility(){
