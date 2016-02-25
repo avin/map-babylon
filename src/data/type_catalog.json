@@ -134,6 +134,24 @@
         }
     },
     {
+        "_id": 5,
+        "name": "Колодец",
+        "code_class": "well",
+        "kind": "figure",
+        "properties": [],
+        "parent_id": 0,
+        "create_enable": true,
+        "default_model": "well",
+        "rules": {
+            "mount": [
+                1
+            ]
+        },
+        "style": {
+            "color": "#39314C"
+        }
+    },
+    {
         "_id": 6,
         "name": "Кабельный канал",
         "code_class": "cable_сhannel",

@@ -1,6 +1,6 @@
 import {calc} from '../../helpers';
 import modeButtonsActions from '../../ui/modeButtons/actions/actions'
-import {KEY_CODES, CONTROL_MODES} from '../../constants';
+import {VISIBILITY, KEY_CODES, CONTROL_MODES} from '../../constants';
 
 export default class {
 
@@ -299,6 +299,11 @@ export default class {
                             }
                         }
 
+                        //Только элементы которые не скрыты
+                        if (_.get(mesh, 'element.visibility') !== VISIBILITY.NORMAL){
+                            return false;
+                        }
+
                         //Только элементы на которые можно монтировать
                         return this.currentElement.canBeMountedOn(mesh.element);
                     }, false, camera);
@@ -327,6 +332,11 @@ export default class {
                 case 'linePoint':
                 {
                     let pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
+
+                        //Только элементы которые не скрыты
+                        if (_.get(mesh, 'element.visibility') !== VISIBILITY.NORMAL){
+                            return false;
+                        }
 
                         //Только элементы на которые можно монтировать
                         return this.currentElement.canBeMountedOn(mesh.element);
@@ -364,6 +374,11 @@ export default class {
                         let pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
                             //Исключаем положение самой перетаскиваемой
                             if (_.eq(mesh, this.currentElement.mesh)) {
+                                return false;
+                            }
+
+                            //Только элементы которые не скрыты
+                            if (_.get(mesh, 'element.visibility') !== VISIBILITY.NORMAL){
                                 return false;
                             }
 
@@ -549,6 +564,11 @@ export default class {
             //Если точка отжима такаяже как и клика - выбираем элемент под курсором
             if (_.isEqual(this.startingMousePoint, this.endingMousePoint)) {
                 pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
+
+                    //Только элементы которые не скрыты
+                    if (_.get(mesh, 'element.visibility') !== VISIBILITY.NORMAL){
+                        return false;
+                    }
 
                     //Проверяем что фигура под курсором принадлежит элементу
                     return mesh.element;

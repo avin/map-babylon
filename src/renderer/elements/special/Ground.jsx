@@ -251,7 +251,6 @@ export default class extends AbstractElement {
 
                 if (!_.isEqual(this.currentTileUnderCameraData, tileUnderCameraData)){
                     this.createTileGround();
-                    console.log('update tile map', tileUnderCameraData);
                 }
 
                 break;
