@@ -550,10 +550,8 @@ export default class {
             if (_.isEqual(this.startingMousePoint, this.endingMousePoint)) {
                 pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
 
-                    //Проверяем что фигура под курсором принадлежит одному из элементов
-                    return _.filter(this.scene.elements, (element) => {
-                        return _.eq(element.mesh, mesh)
-                    });
+                    //Проверяем что фигура под курсором принадлежит элементу
+                    return mesh.element;
 
                 }, false, this.playerCamera);
 

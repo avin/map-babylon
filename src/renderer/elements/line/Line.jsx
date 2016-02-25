@@ -1,4 +1,5 @@
 import AbstractElement from '../AbstractElement';
+import options from '../../../options'
 
 export default class extends AbstractElement {
 
@@ -72,13 +73,16 @@ export default class extends AbstractElement {
             //Рисуем линию в виде нитки
             this.line = BABYLON.Mesh.CreateLines('lines', linePositions, this.scene, true);
 
-            this.setMaterial();
+            //this.setMaterial();
 
             //Оставляем в mesh-e сслыку на родительский объект
             if (this.mesh) {
                 this.mesh.element = this;
             }
         }
+
+        //При отдалении фигура становится невидимой
+        this.setLODLevel(options.LODLevel);
     }
 
     /**
@@ -181,7 +185,7 @@ export default class extends AbstractElement {
      */
     disableHighlight(highlightRelated = false) {
         //Выставляем оригинальный материал
-        this.setMaterial();
+        //this.setMaterial();
 
         //Прячем опорные точки
         this.hidePointMeshes();
@@ -252,17 +256,19 @@ export default class extends AbstractElement {
 
             //Обновляем трубку
             this.mesh = BABYLON.Mesh.CreateTube(null, linePositions, 0.05, null, null, null, null, null, null, this.mesh);
+            this.mesh.refreshBoundingInfo();
 
             //Обновляем нитку
             this.line = BABYLON.Mesh.CreateLines(null, linePositions, null, null, this.line);
+            this.line.refreshBoundingInfo();
         }
     }
 
-    setMaterial(specialColor){
-        if(this.line){
-            this.line.color = super.setMaterial(specialColor);
-        }
-    }
+    //setMaterial(specialColor){
+    //    if(this.line){
+    //        this.line.color = super.setMaterial(specialColor);
+    //    }
+    //}
 
     /**
      * Покадровое обновление элемента

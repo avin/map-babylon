@@ -13,10 +13,16 @@ export default class Abstract {
         this._id = elementData._id;
         this.type = this.scene.typeCatalog[this.data.type_id];
 
-        this.mesh = null; //Фигура элемента
+        //Фигура элемента
+        this.mesh = null;
 
-        //Флаг подсветки элемента
-        this.highlighted = false;
+        //Флаги состояний элемента
+        this.flags = {
+            //Флаг подсветки элемента
+            highlighted: false,
+            //Флаг возможности монтирования на элемент null - без флага, 1 - положительно, 0 - отрицательно
+            mountCompatible: null,
+        };
 
         this.history = [];
     }
@@ -49,14 +55,14 @@ export default class Abstract {
      * Подсветить элемент
      */
     enableHighlight(highlightRelated = false) {
-        this.highlighted = true;
+        this.flags.highlighted = true;
     }
 
     /**
      * Убрать подсветку
      */
     disableHighlight(highlightRelated = false) {
-        this.highlighted = false;
+        this.flags.highlighted = false;
     }
 
     /**
@@ -227,25 +233,86 @@ export default class Abstract {
     }
 
     /**
-     * Назначить фигуре материал
+     * Предопределение материалов для фигуры
      * @returns {*|BABYLON.Color3.FromInts}
      */
-    setMaterial(specialColor) {
-        let typeStyleColor = specialColor ? specialColor : color.hexColorToBabylonColor3(_.get(this.getType(), 'style.color', '#FFFFFF'));
+    initMaterials() {
+        let typeStyleColor = color.hexColorToBabylonColor3(_.get(this.getType(), 'style.color', '#FFFFFF'));
 
         if (this.mesh) {
             //Если фигура является инстансом - работаем с исходной фигурой
             let mesh = this.mesh.sourceMesh ? this.mesh.sourceMesh : this.mesh;
 
-            mesh.material = new BABYLON.StandardMaterial('material', this.scene);
-            mesh.material.glossiness = 0.2;
+            if(! mesh.materials){
+                mesh.materials = {};
+            }
 
-            mesh.material.diffuseColor = typeStyleColor;
-            mesh.material.specularColor = new BABYLON.Color4(0.3, 0.3, 0.3, 0.5);
-            mesh.material.useGlossinessFromSpecularMapAlpha = true;
+            //определяем оригинальный материал
+            if (! mesh.materials.original){
+                mesh.materials.original = new BABYLON.StandardMaterial('material', this.scene);
+                mesh.materials.original.glossiness = 0.2;
+
+                mesh.materials.original.diffuseColor = typeStyleColor;
+                mesh.materials.original.specularColor = new BABYLON.Color4(0.3, 0.3, 0.3, 0.5);
+                mesh.materials.original.useGlossinessFromSpecularMapAlpha = true;
+            }
+
+            //определяем оригинальный материал c прозрачностью
+            if (! mesh.materials.originalTransparent){
+                mesh.materials.originalTransparent = new BABYLON.StandardMaterial('material', this.scene);
+                mesh.materials.originalTransparent.glossiness = 0.2;
+
+                mesh.materials.originalTransparent.diffuseColor = typeStyleColor;
+                mesh.materials.originalTransparent.specularColor = new BABYLON.Color4(0.3, 0.3, 0.3, 0.5);
+                mesh.materials.originalTransparent.useGlossinessFromSpecularMapAlpha = true;
+
+                mesh.materials.originalTransparent.alpha = 0.3;
+            }
+
+            //определяем материал для подсветки возможности монтирования
+            if (! mesh.materials.mountCompatible){
+                mesh.materials.mountCompatible = new BABYLON.StandardMaterial('material', this.scene);
+                mesh.materials.mountCompatible.glossiness = 0.2;
+
+                mesh.materials.mountCompatible.diffuseColor = new BABYLON.Color3(0, 1, 0);
+                mesh.materials.mountCompatible.specularColor = new BABYLON.Color4(0.3, 0.3, 0.3, 0.5);
+                mesh.materials.mountCompatible.useGlossinessFromSpecularMapAlpha = true;
+            }
+
+            //определяем материал для подсветки возможности монтирования с прозрачностью
+            if (! mesh.materials.mountCompatibleTransparent){
+                mesh.materials.mountCompatibleTransparent = new BABYLON.StandardMaterial('material', this.scene);
+                mesh.materials.mountCompatibleTransparent.glossiness = 0.2;
+
+                mesh.materials.mountCompatibleTransparent.diffuseColor = new BABYLON.Color3(0, 1, 0);
+                mesh.materials.mountCompatibleTransparent.specularColor = new BABYLON.Color4(0.3, 0.3, 0.3, 0.5);
+                mesh.materials.mountCompatibleTransparent.useGlossinessFromSpecularMapAlpha = true;
+
+                mesh.materials.mountCompatibleTransparent.alpha = 0.3;
+            }
+
+            //определяем материал для подсветки невозможности монтирования
+            if (! mesh.materials.mountIncompatible){
+                mesh.materials.mountIncompatible = new BABYLON.StandardMaterial('material', this.scene);
+                mesh.materials.mountIncompatible.glossiness = 0.2;
+
+                mesh.materials.mountIncompatible.diffuseColor = new BABYLON.Color3(1, 1, 1);
+                mesh.materials.mountIncompatible.specularColor = new BABYLON.Color4(0.3, 0.3, 0.3, 0.5);
+                mesh.materials.mountIncompatible.useGlossinessFromSpecularMapAlpha = true;
+            }
+
+            //определяем материал для подсветки невозможности монтирования с прозрачностью
+            if (! mesh.materials.mountIncompatibleTransparent){
+                mesh.materials.mountIncompatibleTransparent = new BABYLON.StandardMaterial('material', this.scene);
+                mesh.materials.mountIncompatibleTransparent.glossiness = 0.2;
+
+                mesh.materials.mountIncompatibleTransparent.diffuseColor = new BABYLON.Color3(1, 1, 1);
+                mesh.materials.mountIncompatibleTransparent.specularColor = new BABYLON.Color4(0.3, 0.3, 0.3, 0.5);
+                mesh.materials.mountIncompatibleTransparent.useGlossinessFromSpecularMapAlpha = true;
+
+                mesh.materials.mountIncompatibleTransparent.alpha = 0.3;
+            }
         }
-
-        return typeStyleColor;
     }
 
     setViewMode(mode) {
@@ -254,12 +321,16 @@ export default class Abstract {
                 case VIEW_MODES.CLASSIC:
                 {
 
-                    let sourceMesh = this.mesh.sourceMesh || this.mesh;
-                    let mesh = this.mesh;
+                    let mesh = this.mesh.sourceMesh || this.mesh;
 
-                    sourceMesh.material.fillMode = 3;
+                    if (mesh.viewMode !== VIEW_MODES.CLASSIC){
+                        //mesh.m
+                    }
+
                     mesh.material.fillMode = 3;
                     mesh.disableEdgesRendering();
+
+                    mesh.viewMode = VIEW_MODES.CLASSIC;
 
                     break;
                 }
@@ -269,8 +340,8 @@ export default class Abstract {
                     let sourceMesh = this.mesh.sourceMesh || this.mesh;
                     let mesh = this.mesh;
 
-                    sourceMesh.material.fillMode = 3;
-                    mesh.material.fillMode = 3;
+                    //sourceMesh.material.fillMode = 3;
+                    //mesh.material.fillMode = 3;
                     mesh.enableEdgesRendering();
                     mesh.edgesWidth = 3.0;
                     mesh.edgesColor = new BABYLON.Color4(0, 0, 0, 1);
@@ -283,8 +354,8 @@ export default class Abstract {
                     let sourceMesh = this.mesh.sourceMesh || this.mesh;
                     let mesh = this.mesh;
 
-                    sourceMesh.material.fillMode = 3;
-                    mesh.material.fillMode = 2;
+                    //sourceMesh.material.fillMode = 3;
+                    //mesh.material.fillMode = 2;
                     mesh.enableEdgesRendering();
                     mesh.edgesWidth = 3.0;
                     mesh.edgesColor = new BABYLON.Color4(1, 1, 1, 0.8);
@@ -297,8 +368,8 @@ export default class Abstract {
                     let sourceMesh = this.mesh.sourceMesh || this.mesh;
                     let mesh = this.mesh;
 
-                    sourceMesh.material.fillMode = 3;
-                    mesh.material.fillMode = 1;
+                    //sourceMesh.material.fillMode = 3;
+                    //mesh.material.fillMode = 1;
                     mesh.disableEdgesRendering();
 
                     break;
@@ -308,10 +379,29 @@ export default class Abstract {
     }
 
     /**
+     * Выставить дальность прорисовки фигуры
+     * @param LODLevel
+     */
+    setLODLevel(LODLevel){
+        if (this.mesh){
+            if (this.mesh.sourceMesh){
+                this.mesh.sourceMesh.addLODLevel(LODLevel, null);
+            } else {
+                this.mesh.addLODLevel(LODLevel, null);
+            }
+        }
+
+        if(this.line){
+            this.line.addLODLevel(LODLevel, null);
+        }
+    }
+
+    /**
      * Подкрасить как совместимый для монтирования
      */
     colorMountCompatible() {
-        this.setMaterial(new BABYLON.Color3(0, 1, 0));
+        this.flags.mountCompatible = 1;
+
         this.setVisibility(this.visibility);
     }
 
@@ -319,7 +409,8 @@ export default class Abstract {
      * Подкрасить как несовместимый для монтирования
      */
     colorMountIncompatible() {
-        this.setMaterial(new BABYLON.Color3(1, 1, 1));
+        this.flags.mountCompatible = 0;
+
         this.setVisibility(this.visibility);
     }
 
@@ -327,7 +418,8 @@ export default class Abstract {
      * Убрать подкрашивание
      */
     unColor() {
-        this.setMaterial();
+        this.flags.mountCompatible = null;
+
         this.setVisibility(this.visibility);
     }
 

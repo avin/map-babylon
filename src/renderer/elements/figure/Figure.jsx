@@ -1,4 +1,5 @@
 import AbstractElement from '../AbstractElement';
+import options from '../../../options'
 
 export default class extends AbstractElement {
 
@@ -24,7 +25,10 @@ export default class extends AbstractElement {
             }
         }
 
-        this.setMaterial();
+        this.initMaterials();
+
+        //При отдалении фигура становится невидимой
+        this.setLODLevel(options.LODLevel);
 
         super._init();
     }
@@ -72,9 +76,17 @@ export default class extends AbstractElement {
         super.setVisibilityNormal();
 
         let mesh = this.mesh.sourceMesh || this.mesh;
-
         mesh.visibility = 1;
-        mesh.material.alpha = 1;
+
+        //Выставляем текстуру в зависимости от текущей подсветки
+        if (this.flags.mountCompatible === 1){
+            mesh.material = mesh.materials.mountCompatible;
+        } else if (this.flags.mountCompatible === 0){
+            mesh.material = mesh.materials.mountIncompatible;
+        } else {
+            mesh.material = mesh.materials.original;
+        }
+
     }
 
     /**
@@ -84,9 +96,16 @@ export default class extends AbstractElement {
         super.setVisibilityTransparent();
 
         let mesh = this.mesh.sourceMesh || this.mesh;
-
         mesh.visibility = 1;
-        mesh.material.alpha = 0.3;
+
+        //Выставляем текстуру в зависимости от текущей подсветки
+        if (this.flags.mountCompatible === 1){
+            mesh.material = mesh.materials.mountCompatibleTransparent;
+        } else if (this.flags.mountCompatible === 0){
+            mesh.material = mesh.materials.mountIncompatibleTransparent;
+        } else {
+            mesh.material = mesh.materials.originalTransparent;
+        }
     }
 
     /**
@@ -96,9 +115,7 @@ export default class extends AbstractElement {
         super.setVisibilityHidden();
 
         let mesh = this.mesh.sourceMesh || this.mesh;
-
         mesh.visibility = 0;
-        mesh.material.alpha = 1;
     }
 
 

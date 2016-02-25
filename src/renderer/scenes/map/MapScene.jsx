@@ -9,6 +9,7 @@ import CameraLight from './lights/CameraLight';
 import Control from '../../control/Control';
 
 import {CONTROL_MODES} from '../../../constants'
+import options from '../../../options';
 
 //Импорт данных
 import elementCatalog from '../../../data/element_catalog.json'
@@ -21,8 +22,39 @@ export default class extends SceneWithElements {
         //Персональное имя сцены
         this.name = 'map';
 
+        //Добавить в каталог тестовые элементы для нагрузки
+        _.each(_.range(10, 100), (keyX) => {
+            _.each(_.range(10, 100), (keyZ) => {
+                elementCatalog.push({
+                    "_id": keyX * 1000 + keyZ,
+                    "type_id": 3,
+                    "properties": [],
+                    "parent": 1,
+                    "location": {
+                        "position": {
+                            "x": keyX * 3,
+                            "y": 0,
+                            "z": keyZ * 3
+                        },
+                        "rotation": {
+                            "x": 0,
+                            "y": 0,
+                            "z": 0
+                        }
+                    },
+                    "custom_model": false,
+                    "history": [],
+                    "states": []
+                });
+            })
+        });
+
         //Каталог элементов
         this.elementCatalog = _.keyBy(elementCatalog, '_id');
+
+        if (options.babylonDebug) {
+            this.showDebug();
+        }
 
         //Определения стека отмены действий
         //this.undoStack = new UndoStack(this);
@@ -56,7 +88,6 @@ export default class extends SceneWithElements {
         this.loader.load();
     }
 
-
     /**
      * Инициализация камер
      * @private
@@ -75,7 +106,6 @@ export default class extends SceneWithElements {
 
         //Мини камера
         //this.miniMapCamera = new MiniMapCamera();
-
     }
 
     /**
@@ -165,7 +195,7 @@ export default class extends SceneWithElements {
      * @param elementType
      * @returns {*}
      */
-    _appendSingleElement(elementType){
+    _appendSingleElement(elementType) {
         let newElementData = {
             type_id: elementType._id,
             properties: [],
@@ -199,7 +229,7 @@ export default class extends SceneWithElements {
      * @param elementType
      * @private
      */
-    _appendComplexElement(elementType){
+    _appendComplexElement(elementType) {
         let parts = [];
 
         //Создаем элемент по каждой части элемента
@@ -231,7 +261,7 @@ export default class extends SceneWithElements {
             let appendingElement = this.elementDispatcher.createElement(newElementData);
 
             //Делаем привязку к родительскому элементу
-            if (part.parent !== undefined){
+            if (part.parent !== undefined) {
                 let parentElement = parts[part.parent];
                 appendingElement.setParent(parentElement);
 
