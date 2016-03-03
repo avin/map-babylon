@@ -2,6 +2,7 @@ var path = require('path');
 var webpack = require('webpack');
 
 var commonsPlugin = new webpack.optimize.CommonsChunkPlugin('shared.js');
+var fetchPlugin = new webpack.ProvidePlugin({'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch'});
 
 module.exports = {
     context: path.resolve('src'),
@@ -14,7 +15,10 @@ module.exports = {
         path: path.resolve('public/build'),
         filename: "[name].js"
     },
-    plugins: [commonsPlugin],
+    plugins: [
+        commonsPlugin,
+        fetchPlugin
+    ],
 
     module: {
         loaders: [

@@ -34,6 +34,10 @@ out skel qt;
 //out body;
 ```
 
+### Выборка данных через mapzen
+https://mapzen.com/projects/vector-tiles/
+
+
 ### Цветовые палитры
 
 http://www.colourlovers.com/palette/3804566/N_e_w_*_Y_o_r_k
