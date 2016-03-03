@@ -214,11 +214,24 @@ export default class Abstract {
     /**
      * Может ли элемент быть смонтирован на указанном родителе
      * @param parentElement
+     * @param position - позиция точки монтирования
      */
-    canBeMountedOn(parentElement) {
+    canBeMountedOn(parentElement, position) {
         if (parentElement) {
             let parentType = parentElement.getType();
             let ruleMountIds = _.get(this.type, 'rules.mount', []);
+
+            //Если указана точка монтирования - дополняем правила в зависимости от уровня относительно земли
+            if (position){
+                if (position.y> 0){
+                    ruleMountIds = _.concat(ruleMountIds, _.get(this.type, 'rules.mount_overground', []))
+                } else {
+                    ruleMountIds = _.concat(ruleMountIds, _.get(this.type, 'rules.mount_underground', []))
+                }
+            } else {
+                ruleMountIds = _.concat(ruleMountIds, _.get(this.type, 'rules.mount_overground', []))
+                ruleMountIds = _.concat(ruleMountIds, _.get(this.type, 'rules.mount_underground', []))
+            }
 
             return _.includes(ruleMountIds, parentType._id);
         }

@@ -6,11 +6,12 @@ var commonsPlugin = new webpack.optimize.CommonsChunkPlugin('shared.js');
 module.exports = {
     context: path.resolve('src'),
     entry: {
-        app: './app.jsx',
+        map: './map/app.jsx',
+        converter: './converter/app.jsx',
 
     },
     output: {
-        path: path.resolve('dist/build'),
+        path: path.resolve('public/build'),
         filename: "[name].js"
     },
     plugins: [commonsPlugin],

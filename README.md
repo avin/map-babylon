@@ -1,3 +1,5 @@
+# Map-babylon
+
 ## Сборка
 
 Предварительно требуется глобальная установка webpack
@@ -6,13 +8,20 @@ npm install
 webpack
 ```
 
+## Запуск
+Выполнить
+```
+npm start
+```
+Открыть через браузер http://localhost:3000/
+
 ### Выборка строений через Overpass
 
 Ссылка http://overpass-turbo.eu/
 ```
 [out:json][timeout:25];
 (
-  way["building"]({{bbox}});  
+  way["building"]({{bbox}});
 );
 out body;
 >;
@@ -28,6 +37,11 @@ out skel qt;
 ### Цветовые палитры
 
 http://www.colourlovers.com/palette/3804566/N_e_w_*_Y_o_r_k
+
+### Заметки
+
+Подсчет градуса между тремя точками методами бабилона
+http://www.babylonjs-playground.com/#LG3GS#87
 
 # TODO
 

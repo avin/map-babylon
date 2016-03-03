@@ -22,32 +22,32 @@ export default class extends SceneWithElements {
         //Персональное имя сцены
         this.name = 'map';
 
-        //Добавить в каталог тестовые элементы для нагрузки
-        _.each(_.range(10, 100), (keyX) => {
-            _.each(_.range(10, 100), (keyZ) => {
-                elementCatalog.push({
-                    "_id": keyX * 1000 + keyZ,
-                    "type_id": 3,
-                    "properties": [],
-                    "parent": 1,
-                    "location": {
-                        "position": {
-                            "x": keyX * 3,
-                            "y": 0,
-                            "z": keyZ * 3
-                        },
-                        "rotation": {
-                            "x": 0,
-                            "y": 0,
-                            "z": 0
-                        }
-                    },
-                    "custom_model": false,
-                    "history": [],
-                    "states": []
-                });
-            })
-        });
+        ////Добавить в каталог тестовые элементы для нагрузки
+        //_.each(_.range(10, 100), (keyX) => {
+        //    _.each(_.range(10, 100), (keyZ) => {
+        //        elementCatalog.push({
+        //            "_id": keyX * 1000 + keyZ,
+        //            "type_id": 3,
+        //            "properties": [],
+        //            "parent": 1,
+        //            "location": {
+        //                "position": {
+        //                    "x": keyX * 3,
+        //                    "y": 0,
+        //                    "z": keyZ * 3
+        //                },
+        //                "rotation": {
+        //                    "x": 0,
+        //                    "y": 0,
+        //                    "z": 0
+        //                }
+        //            },
+        //            "custom_model": false,
+        //            "history": [],
+        //            "states": []
+        //        });
+        //    })
+        //});
 
         //Каталог элементов
         this.elementCatalog = _.keyBy(elementCatalog, '_id');

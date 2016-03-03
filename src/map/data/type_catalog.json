@@ -126,25 +126,8 @@
         "rules": {
             "mount": [
                 3,
-                4
-            ]
-        },
-        "style": {
-            "color": "#39314C"
-        }
-    },
-    {
-        "_id": 5,
-        "name": "Колодец",
-        "code_class": "well",
-        "kind": "figure",
-        "properties": [],
-        "parent_id": 0,
-        "create_enable": true,
-        "default_model": "well",
-        "rules": {
-            "mount": [
-                1
+                4,
+                8
             ]
         },
         "style": {
@@ -161,12 +144,16 @@
         "create_enable": true,
         "rules": {
             "mount": [
-                5,
-                3
+                5, 3
+            ],
+            "mount_underground": [
+
+            ],
+            "mount_overground": [
+
             ],
             "intermediate": [
-                3,
-                5
+
             ],
             "passage": []
         },
@@ -210,5 +197,23 @@
             }
 
         ]
+    },
+    {
+        "_id": 8,
+        "name": "Колодец",
+        "code_class": "well",
+        "kind": "figure",
+        "properties": [],
+        "parent_id": 0,
+        "create_enable": true,
+        "default_model": "well",
+        "rules": {
+            "mount": [
+                1
+            ]
+        },
+        "style": {
+            "color": "#39314C"
+        }
     }
 ]

@@ -67,8 +67,15 @@ export default class extends AbstractElement {
              */
 
             //Инче создаем новую
-            this.mesh = BABYLON.Mesh.CreateTube('lines', linePositions, this.tubeRadius, 3, null, 0, this.scene, true);
+            this.mesh = BABYLON.Mesh.CreateTube('lines', linePositions, this.tubeRadius, 3, null, 0, this.scene, true, BABYLON.Mesh.DOUBLESIDE);
             this.mesh.freezeNormals();
+            this.mesh.material = new BABYLON.StandardMaterial('mat', this.scene);
+            this.mesh.material.specularColor = new BABYLON.Color4(0,0,0,0);
+            this.mesh.material.useGlossinessFromSpecularMapAlpha = true;
+            //this.mesh.material.diffuseColor = BABYLON.Color3.White();
+            this.mesh.material.diffuseColor = new BABYLON.Color3(0,1,1);
+            this.mesh.material.emissiveColor = BABYLON.Color3.White();
+            this.mesh.material.linkEmissiveWithDiffuse = true;
 
             //Рисуем линию в виде нитки
             this.line = BABYLON.Mesh.CreateLines('lines', linePositions, this.scene, true);

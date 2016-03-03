@@ -310,6 +310,11 @@ export default class {
 
                     if (pickInfo.hit) {
 
+                        //Проверяем объект по правилам монтирования зависящие от положения точки монтирования
+                        if (! this.currentElement.canBeMountedOn(pickInfo.pickedMesh.element, pickInfo.pickedPoint)){
+                            return false;
+                        }
+
                         //Назначем родителем элемента - элемент под ним
                         this.currentElement.setParent(pickInfo.pickedMesh.element);
 
@@ -343,12 +348,19 @@ export default class {
                     }, false, camera);
 
                     if (pickInfo.hit) {
+                        //Точка крепления должна находится на небольшом растоянии от поверхности
+                        let pickedPoint = pickInfo.pickedPoint.add(pickInfo.getNormal().multiply(new BABYLON.Vector3(0.05,0.05,0.05)));
+
+                        //Проверяем объект по правилам монтирования зависящие от положения точки монтирования
+                        if (! this.currentElement.canBeMountedOn(pickInfo.pickedMesh.element, pickInfo.pickedPoint)){
+                            return false;
+                        }
 
                         //Привязываем опорную точку к элементу на который перемещаем
                         this.currentElement.setPointMeshParentElement(this.currentControlMesh, pickInfo.pickedMesh.element);
 
                         //Меняем положение опорной точки
-                        this.currentControlMesh.setAbsolutePosition(pickInfo.pickedPoint);
+                        this.currentControlMesh.setAbsolutePosition(pickedPoint);
                     }
                     break;
                 }
@@ -371,7 +383,7 @@ export default class {
                         /**
                          * Перемещаем фигуру за курсором
                          */
-                        let pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh)=> {
+                        let pickInfo = scene.pick(scene.pointerX, scene.pointerY, (mesh, foo)=> {
                             //Исключаем положение самой перетаскиваемой
                             if (_.eq(mesh, this.currentElement.mesh)) {
                                 return false;
@@ -387,6 +399,11 @@ export default class {
                         }, false, camera);
 
                         if (pickInfo.hit) {
+
+                            //Проверяем объект по правилам монтирования зависящие от положения точки монтирования
+                            if (! this.currentElement.canBeMountedOn(pickInfo.pickedMesh.element, pickInfo.pickedPoint)){
+                                return false;
+                            }
 
                             //Назначем родителем элемента - элемент под ним
                             this.currentElement.setParent(pickInfo.pickedMesh.element);
@@ -537,8 +554,16 @@ export default class {
                             }, false, this.playerCamera);
 
                             if (pickInfo.hit) {
+                                //Точка крепления должна находится на небольшом растоянии от поверхности
+                                let pickedPoint = pickInfo.pickedPoint.add(pickInfo.getNormal().multiply(new BABYLON.Vector3(0.05,0.05,0.05)));
+
+                                //Проверяем объект по правилам монтирования зависящие от положения точки монтирования
+                                if (! this.currentElement.canBeMountedOn(pickInfo.pickedMesh.element, pickInfo.pickedPoint)){
+                                    return false;
+                                }
+
                                 //Добавляем точку в линию
-                                this.currentElement.addPoint(pickInfo.pickedPoint, pickInfo.pickedMesh.element, true);
+                                this.currentElement.addPoint(pickedPoint, pickInfo.pickedMesh.element, true);
                             }
 
                             break;
