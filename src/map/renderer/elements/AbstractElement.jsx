@@ -1,4 +1,4 @@
-import {color} from '../../helpers'
+import {color} from '../../../common/helpers'
 import {VISIBILITY, VIEW_MODES} from '../../constants'
 
 export default class Abstract {

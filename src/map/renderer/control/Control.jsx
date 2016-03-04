@@ -1,4 +1,4 @@
-import {calc} from '../../helpers';
+import {calc} from '../../../common/helpers';
 import modeButtonsActions from '../../ui/modeButtons/actions/actions'
 import {VISIBILITY, KEY_CODES, CONTROL_MODES} from '../../constants';
 

@@ -1,5 +1,5 @@
 import AbstractElement from '../AbstractElement';
-import {coordinateConverter} from '../../../helpers';
+import {coordinateConverter} from '../../../../common/helpers';
 
 export default class extends AbstractElement {
 
