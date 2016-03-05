@@ -1,4 +1,4 @@
 export default {
     babylonDebug: false,
-    LODLevel: 100,
+    LODLevel: 500,
 };

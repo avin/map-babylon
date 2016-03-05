@@ -4,12 +4,23 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var assert = require('assert');
 
 var routes = require('./routes/index');
 var mapRoutes = require('./routes/map');
 var converterRoutes = require('./routes/converter');
+var MongoClient = require('mongodb').MongoClient;
+var config = require('./config');
 
 var app = express();
+
+//Подключаемся к базе
+MongoClient.connect(config.mongoUrl, (err, mongoDb) => {
+    assert.equal(null, err);
+
+    console.log('Connected to mongoDB');
+    app.set('mongoDb', mongoDb);
+});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

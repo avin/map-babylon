@@ -9,15 +9,14 @@ export default class extends BABYLON.Scene {
     /**
      * Получить obj фигуры строения по координатам и высоте
      * @param coordinates
-     * @param levels
+     * @param height
      */
-    generateBuildingObjData(coordinates, levels = 1) {
+    generateBuildingObjData(coordinates, height = 3) {
 
         let buildingStartPoint = coordinateConverter.degreesToPixels(coordinates[0][1], coordinates[0][0]);
 
         //Считаем высоту строения по этажам
-        let height = levels * 3; //3 метра на этаж
-        let min_height = -3; //3 метра подвал
+        let min_height = 0; //3 метра подвал
 
         let shape = [];
         for (let i = 0; i < coordinates.length; i++) {
@@ -25,7 +24,11 @@ export default class extends BABYLON.Scene {
             shape.push(new BABYLON.Vector2(pixelcoordinates.x - buildingStartPoint.x, pixelcoordinates.y - buildingStartPoint.y));
         }
 
-        let mesh = new BABYLON.PolygonMeshBuilder("building", shape, this).build(1, height);
+        //Отчет точек против часовой стрелки для нормального выставления нормалей стенок
+        shape = _.reverse(shape);
+
+        //Примечание: 3 метра на подвал!
+        let mesh = new BABYLON.PolygonMeshBuilder("building", shape, this).build(1, height + 3);
 
         //Поднимаем высоту внутренних точек фигуры на высоту строения
         var updatePositions = function (positions) {
@@ -36,9 +39,13 @@ export default class extends BABYLON.Scene {
         mesh.updateMeshPositions(updatePositions);
         mesh.refreshBoundingInfo();
 
+        let obj = BABYLON.OBJExport.OBJ(mesh, false);
+
+        mesh.dispose();
+
         return {
-            position: buildingStartPoint,
-            obj:BABYLON.OBJExport.OBJ(mesh, false)
-        }
+            obj,
+            position: {x: buildingStartPoint.x, z: buildingStartPoint.y, y: 0},
+        };
     }
 }

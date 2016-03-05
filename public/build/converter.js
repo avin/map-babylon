@@ -25,15 +25,17 @@ webpackJsonp([0],[
 	var _rendererJsx2 = _interopRequireDefault(_rendererJsx);
 
 	var layers = 'buildings';
-	var _zoom$minX$minY = { zoom: 16, minX: 40117, minY: 20369 };
-	var zoom = _zoom$minX$minY.zoom;
-	var minX = _zoom$minX$minY.minX;
-	var minY = _zoom$minX$minY.minY;
-	var _maxX$maxY = { maxX: 40125, maxY: 20372 };
-	var maxX = _maxX$maxY.maxX;
-	var maxY = _maxX$maxY.maxY;
-
+	var zoom = 16;
+	//let minX = 40106;
+	var minX = 40111;
+	//let maxX = 40144;
+	var maxX = 40121;
+	//let minY = 20348;
+	var minY = 20367;
+	//let maxY = 20378;
+	var maxY = 20375;
 	var apiKey = _commonKeys2['default'].mapzen_tiles;
+	var id = 1;
 
 	var renderer = new _rendererJsx2['default']('converter-canvas');
 	var scene = new _sceneJsx2['default'](renderer.engine);
@@ -52,68 +54,87 @@ webpackJsonp([0],[
 	 * Получаем данные о строениях для заданного тайла
 	 */
 	var parseTile = function parseTile(x, y) {
-	    fetch('https://vector.mapzen.com/osm/' + layers + '/' + zoom + '/' + x + '/' + y + '.json?api_key=' + apiKey).then(function (response) {
-	        return response.json();
-	    }).then(function (data) {
+	    setTimeout(function () {
+	        fetch('https://vector.mapzen.com/osm/' + layers + '/' + zoom + '/' + x + '/' + y + '.json?api_key=' + apiKey).then(function (response) {
+	            return response.json();
+	        }).then(function (data) {
+	            return new Promise(function (resolve, reject) {
 
-	        //Преобразуем полученные данные
-	        var buildings = data.features.map(function (feature) {
-	            return {
-	                coordinates: _.get(feature, 'geometry.coordinates.0', []),
-	                properties: _.get(feature, 'properties', {})
-	            };
-	        });
+	                //Преобразуем полученные данные
+	                var buildings = [];
+	                _.each(data.features, function (feature) {
+	                    if (_.get(feature, 'geometry.type') === "Polygon") {
+	                        buildings.push({
+	                            coordinates: _.get(feature, 'geometry.coordinates.0', []),
+	                            properties: _.get(feature, 'properties', {}),
+	                            id: id++
+	                        });
+	                    }
+	                });
 
-	        buildings.forEach(function (building) {
+	                var buildingsSaved = 0;
 
-	            //Создаем obj для строения
-	            var objData = scene.generateBuildingObjData(building.coordinates, _.get(building.properties, 'levels', 1));
-	            building.objData = objData;
-
-	            //Сохраняем данные на сервере
-	            fetch('/converter/save', {
-	                method: 'post',
-	                headers: {
-	                    'Accept': 'application/json',
-	                    'Content-Type': 'application/json'
-	                },
-	                body: JSON.stringify({
-	                    building: building
-	                })
-	            }).then(function (response) {
-
-	                //Парсим полученные json данные
-	                return response.json();
-	            }).then(function (response) {
-
-	                //Выводим результат
-	                if (response.message) {
-	                    resultsElement.innerHTML = resultsElement.innerHTML + ('<span class="text-success">' + (0, _sanitizeHtml2['default'])(response.message) + '</span><br>');
-	                } else {
-	                    resultsElement.innerHTML = resultsElement.innerHTML + ('<span class="text-danger">' + (0, _sanitizeHtml2['default'])(response.error) + '</span><br>');
+	                //Если строений нет - переходим к другому тайлу
+	                if (_.isEmpty(buildings)) {
+	                    resolve();
 	                }
 
-	                //Автоскрол результатов
-	                resultsElement.scrollTop = resultsElement.scrollHeight;
+	                buildings.forEach(function (building) {
+
+	                    //Создаем obj для строения
+	                    building.objData = scene.generateBuildingObjData(building.coordinates, _.get(building.properties, 'height', 3));
+
+	                    if (id == 470) {
+	                        debugger;
+	                    }
+
+	                    //Сохраняем данные на сервере
+	                    fetch('/converter/save', {
+	                        method: 'post',
+	                        headers: {
+	                            'Accept': 'application/json',
+	                            'Content-Type': 'application/json'
+	                        },
+	                        body: JSON.stringify({
+	                            building: building
+	                        })
+	                    }).then(function (response) {
+	                        return response.json();
+	                    }).then(function (response) {
+
+	                        //Выводим результат
+	                        //if (response.message) {
+	                        //    resultsElement.innerHTML = resultsElement.innerHTML + `<span
+	                        // class="text-success">${sanitizeHtml(response.message)}</span><br>`; } else {
+	                        // resultsElement.innerHTML = resultsElement.innerHTML + `<span
+	                        // class="text-danger">${sanitizeHtml(response.error)}</span><br>`; }
+
+	                        //Автоскрол результатов
+	                        resultsElement.scrollTop = resultsElement.scrollHeight;
+
+	                        buildingsSaved++;
+
+	                        //Если сохранили все элементы - переходим к другому тайлу
+	                        if (buildingsSaved === buildings.length) {
+	                            resolve();
+	                        }
+	                    })['catch'](function (err) {
+	                        console.log('fetch converter/save error', err);
+	                    });
+	                });
+	            }).then(function () {
+	                currentTile++;
+	                if (currentTile < tiles.length) {
+	                    parseTile(tiles[currentTile].x, tiles[currentTile].y);
+	                }
 
 	                //Обновляем прогрессбар
-
-	                currentTile++;
-
-	                if (currentTile < tiles.length) {
-
-	                    parseTile(tiles[currentTile].x, tiles[currentTile].y);
-	                    var progress = currentTile / (tiles.length - 1) * 100;
-	                    console.log(currentTile, tiles.length, progress);
-
-	                    $('.progress-bar').css('width', progress + '%').attr('aria-valuenow', progress);
-	                }
+	                var progress = currentTile / (tiles.length - 1) * 100;
+	                $('.progress-bar').css('width', progress + '%').attr('aria-valuenow', progress);
 	            })['catch'](function (err) {
-	                console.log('fetch converter/save error', err);
+	                console.log('parsing failed', err);
 	            });
 	        });
-	    })['catch'](function (err) {
-	        console.log('parsing failed', err);
 	    });
 	};
 
@@ -121,409 +142,7 @@ webpackJsonp([0],[
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ },
-/* 1 */
-/***/ function(module, exports) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {/*** IMPORTS FROM imports-loader ***/
-	(function() {
-
-	(function(self) {
-	  'use strict';
-
-	  if (self.fetch) {
-	    return
-	  }
-
-	  function normalizeName(name) {
-	    if (typeof name !== 'string') {
-	      name = String(name)
-	    }
-	    if (/[^a-z0-9\-#$%&'*+.\^_`|~]/i.test(name)) {
-	      throw new TypeError('Invalid character in header field name')
-	    }
-	    return name.toLowerCase()
-	  }
-
-	  function normalizeValue(value) {
-	    if (typeof value !== 'string') {
-	      value = String(value)
-	    }
-	    return value
-	  }
-
-	  function Headers(headers) {
-	    this.map = {}
-
-	    if (headers instanceof Headers) {
-	      headers.forEach(function(value, name) {
-	        this.append(name, value)
-	      }, this)
-
-	    } else if (headers) {
-	      Object.getOwnPropertyNames(headers).forEach(function(name) {
-	        this.append(name, headers[name])
-	      }, this)
-	    }
-	  }
-
-	  Headers.prototype.append = function(name, value) {
-	    name = normalizeName(name)
-	    value = normalizeValue(value)
-	    var list = this.map[name]
-	    if (!list) {
-	      list = []
-	      this.map[name] = list
-	    }
-	    list.push(value)
-	  }
-
-	  Headers.prototype['delete'] = function(name) {
-	    delete this.map[normalizeName(name)]
-	  }
-
-	  Headers.prototype.get = function(name) {
-	    var values = this.map[normalizeName(name)]
-	    return values ? values[0] : null
-	  }
-
-	  Headers.prototype.getAll = function(name) {
-	    return this.map[normalizeName(name)] || []
-	  }
-
-	  Headers.prototype.has = function(name) {
-	    return this.map.hasOwnProperty(normalizeName(name))
-	  }
-
-	  Headers.prototype.set = function(name, value) {
-	    this.map[normalizeName(name)] = [normalizeValue(value)]
-	  }
-
-	  Headers.prototype.forEach = function(callback, thisArg) {
-	    Object.getOwnPropertyNames(this.map).forEach(function(name) {
-	      this.map[name].forEach(function(value) {
-	        callback.call(thisArg, value, name, this)
-	      }, this)
-	    }, this)
-	  }
-
-	  function consumed(body) {
-	    if (body.bodyUsed) {
-	      return Promise.reject(new TypeError('Already read'))
-	    }
-	    body.bodyUsed = true
-	  }
-
-	  function fileReaderReady(reader) {
-	    return new Promise(function(resolve, reject) {
-	      reader.onload = function() {
-	        resolve(reader.result)
-	      }
-	      reader.onerror = function() {
-	        reject(reader.error)
-	      }
-	    })
-	  }
-
-	  function readBlobAsArrayBuffer(blob) {
-	    var reader = new FileReader()
-	    reader.readAsArrayBuffer(blob)
-	    return fileReaderReady(reader)
-	  }
-
-	  function readBlobAsText(blob) {
-	    var reader = new FileReader()
-	    reader.readAsText(blob)
-	    return fileReaderReady(reader)
-	  }
-
-	  var support = {
-	    blob: 'FileReader' in self && 'Blob' in self && (function() {
-	      try {
-	        new Blob();
-	        return true
-	      } catch(e) {
-	        return false
-	      }
-	    })(),
-	    formData: 'FormData' in self,
-	    arrayBuffer: 'ArrayBuffer' in self
-	  }
-
-	  function Body() {
-	    this.bodyUsed = false
-
-
-	    this._initBody = function(body) {
-	      this._bodyInit = body
-	      if (typeof body === 'string') {
-	        this._bodyText = body
-	      } else if (support.blob && Blob.prototype.isPrototypeOf(body)) {
-	        this._bodyBlob = body
-	      } else if (support.formData && FormData.prototype.isPrototypeOf(body)) {
-	        this._bodyFormData = body
-	      } else if (!body) {
-	        this._bodyText = ''
-	      } else if (support.arrayBuffer && ArrayBuffer.prototype.isPrototypeOf(body)) {
-	        // Only support ArrayBuffers for POST method.
-	        // Receiving ArrayBuffers happens via Blobs, instead.
-	      } else {
-	        throw new Error('unsupported BodyInit type')
-	      }
-
-	      if (!this.headers.get('content-type')) {
-	        if (typeof body === 'string') {
-	          this.headers.set('content-type', 'text/plain;charset=UTF-8')
-	        } else if (this._bodyBlob && this._bodyBlob.type) {
-	          this.headers.set('content-type', this._bodyBlob.type)
-	        }
-	      }
-	    }
-
-	    if (support.blob) {
-	      this.blob = function() {
-	        var rejected = consumed(this)
-	        if (rejected) {
-	          return rejected
-	        }
-
-	        if (this._bodyBlob) {
-	          return Promise.resolve(this._bodyBlob)
-	        } else if (this._bodyFormData) {
-	          throw new Error('could not read FormData body as blob')
-	        } else {
-	          return Promise.resolve(new Blob([this._bodyText]))
-	        }
-	      }
-
-	      this.arrayBuffer = function() {
-	        return this.blob().then(readBlobAsArrayBuffer)
-	      }
-
-	      this.text = function() {
-	        var rejected = consumed(this)
-	        if (rejected) {
-	          return rejected
-	        }
-
-	        if (this._bodyBlob) {
-	          return readBlobAsText(this._bodyBlob)
-	        } else if (this._bodyFormData) {
-	          throw new Error('could not read FormData body as text')
-	        } else {
-	          return Promise.resolve(this._bodyText)
-	        }
-	      }
-	    } else {
-	      this.text = function() {
-	        var rejected = consumed(this)
-	        return rejected ? rejected : Promise.resolve(this._bodyText)
-	      }
-	    }
-
-	    if (support.formData) {
-	      this.formData = function() {
-	        return this.text().then(decode)
-	      }
-	    }
-
-	    this.json = function() {
-	      return this.text().then(JSON.parse)
-	    }
-
-	    return this
-	  }
-
-	  // HTTP methods whose capitalization should be normalized
-	  var methods = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT']
-
-	  function normalizeMethod(method) {
-	    var upcased = method.toUpperCase()
-	    return (methods.indexOf(upcased) > -1) ? upcased : method
-	  }
-
-	  function Request(input, options) {
-	    options = options || {}
-	    var body = options.body
-	    if (Request.prototype.isPrototypeOf(input)) {
-	      if (input.bodyUsed) {
-	        throw new TypeError('Already read')
-	      }
-	      this.url = input.url
-	      this.credentials = input.credentials
-	      if (!options.headers) {
-	        this.headers = new Headers(input.headers)
-	      }
-	      this.method = input.method
-	      this.mode = input.mode
-	      if (!body) {
-	        body = input._bodyInit
-	        input.bodyUsed = true
-	      }
-	    } else {
-	      this.url = input
-	    }
-
-	    this.credentials = options.credentials || this.credentials || 'omit'
-	    if (options.headers || !this.headers) {
-	      this.headers = new Headers(options.headers)
-	    }
-	    this.method = normalizeMethod(options.method || this.method || 'GET')
-	    this.mode = options.mode || this.mode || null
-	    this.referrer = null
-
-	    if ((this.method === 'GET' || this.method === 'HEAD') && body) {
-	      throw new TypeError('Body not allowed for GET or HEAD requests')
-	    }
-	    this._initBody(body)
-	  }
-
-	  Request.prototype.clone = function() {
-	    return new Request(this)
-	  }
-
-	  function decode(body) {
-	    var form = new FormData()
-	    body.trim().split('&').forEach(function(bytes) {
-	      if (bytes) {
-	        var split = bytes.split('=')
-	        var name = split.shift().replace(/\+/g, ' ')
-	        var value = split.join('=').replace(/\+/g, ' ')
-	        form.append(decodeURIComponent(name), decodeURIComponent(value))
-	      }
-	    })
-	    return form
-	  }
-
-	  function headers(xhr) {
-	    var head = new Headers()
-	    var pairs = xhr.getAllResponseHeaders().trim().split('\n')
-	    pairs.forEach(function(header) {
-	      var split = header.trim().split(':')
-	      var key = split.shift().trim()
-	      var value = split.join(':').trim()
-	      head.append(key, value)
-	    })
-	    return head
-	  }
-
-	  Body.call(Request.prototype)
-
-	  function Response(bodyInit, options) {
-	    if (!options) {
-	      options = {}
-	    }
-
-	    this.type = 'default'
-	    this.status = options.status
-	    this.ok = this.status >= 200 && this.status < 300
-	    this.statusText = options.statusText
-	    this.headers = options.headers instanceof Headers ? options.headers : new Headers(options.headers)
-	    this.url = options.url || ''
-	    this._initBody(bodyInit)
-	  }
-
-	  Body.call(Response.prototype)
-
-	  Response.prototype.clone = function() {
-	    return new Response(this._bodyInit, {
-	      status: this.status,
-	      statusText: this.statusText,
-	      headers: new Headers(this.headers),
-	      url: this.url
-	    })
-	  }
-
-	  Response.error = function() {
-	    var response = new Response(null, {status: 0, statusText: ''})
-	    response.type = 'error'
-	    return response
-	  }
-
-	  var redirectStatuses = [301, 302, 303, 307, 308]
-
-	  Response.redirect = function(url, status) {
-	    if (redirectStatuses.indexOf(status) === -1) {
-	      throw new RangeError('Invalid status code')
-	    }
-
-	    return new Response(null, {status: status, headers: {location: url}})
-	  }
-
-	  self.Headers = Headers;
-	  self.Request = Request;
-	  self.Response = Response;
-
-	  self.fetch = function(input, init) {
-	    return new Promise(function(resolve, reject) {
-	      var request
-	      if (Request.prototype.isPrototypeOf(input) && !init) {
-	        request = input
-	      } else {
-	        request = new Request(input, init)
-	      }
-
-	      var xhr = new XMLHttpRequest()
-
-	      function responseURL() {
-	        if ('responseURL' in xhr) {
-	          return xhr.responseURL
-	        }
-
-	        // Avoid security warnings on getResponseHeader when not allowed by CORS
-	        if (/^X-Request-URL:/m.test(xhr.getAllResponseHeaders())) {
-	          return xhr.getResponseHeader('X-Request-URL')
-	        }
-
-	        return;
-	      }
-
-	      xhr.onload = function() {
-	        var status = (xhr.status === 1223) ? 204 : xhr.status
-	        if (status < 100 || status > 599) {
-	          reject(new TypeError('Network request failed'))
-	          return
-	        }
-	        var options = {
-	          status: status,
-	          statusText: xhr.statusText,
-	          headers: headers(xhr),
-	          url: responseURL()
-	        }
-	        var body = 'response' in xhr ? xhr.response : xhr.responseText;
-	        resolve(new Response(body, options))
-	      }
-
-	      xhr.onerror = function() {
-	        reject(new TypeError('Network request failed'))
-	      }
-
-	      xhr.open(request.method, request.url, true)
-
-	      if (request.credentials === 'include') {
-	        xhr.withCredentials = true
-	      }
-
-	      if ('responseType' in xhr && support.blob) {
-	        xhr.responseType = 'blob'
-	      }
-
-	      request.headers.forEach(function(value, name) {
-	        xhr.setRequestHeader(name, value)
-	      })
-
-	      xhr.send(typeof request._bodyInit === 'undefined' ? null : request._bodyInit)
-	    })
-	  }
-	  self.fetch.polyfill = true
-	})(typeof self !== 'undefined' ? self : this);
-
-
-	/*** EXPORTS FROM exports-loader ***/
-	module.exports = global.fetch;
-	}.call(global));
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
+/* 1 */,
 /* 2 */
 /***/ function(module, exports) {
 
@@ -26095,19 +25714,18 @@ webpackJsonp([0],[
 	    /**
 	     * Получить obj фигуры строения по координатам и высоте
 	     * @param coordinates
-	     * @param levels
+	     * @param height
 	     */
 
 	    _createClass(_default, [{
 	        key: "generateBuildingObjData",
 	        value: function generateBuildingObjData(coordinates) {
-	            var levels = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
+	            var height = arguments.length <= 1 || arguments[1] === undefined ? 3 : arguments[1];
 
 	            var buildingStartPoint = _commonHelpers.coordinateConverter.degreesToPixels(coordinates[0][1], coordinates[0][0]);
 
 	            //Считаем высоту строения по этажам
-	            var height = levels * 3; //3 метра на этаж
-	            var min_height = -3; //3 метра подвал
+	            var min_height = 0; //3 метра подвал
 
 	            var shape = [];
 	            for (var i = 0; i < coordinates.length; i++) {
@@ -26115,7 +25733,11 @@ webpackJsonp([0],[
 	                shape.push(new BABYLON.Vector2(pixelcoordinates.x - buildingStartPoint.x, pixelcoordinates.y - buildingStartPoint.y));
 	            }
 
-	            var mesh = new BABYLON.PolygonMeshBuilder("building", shape, this).build(1, height);
+	            //Отчет точек против часовой стрелки для нормального выставления нормалей стенок
+	            shape = _.reverse(shape);
+
+	            //Примечание: 3 метра на подвал!
+	            var mesh = new BABYLON.PolygonMeshBuilder("building", shape, this).build(1, height + 3);
 
 	            //Поднимаем высоту внутренних точек фигуры на высоту строения
 	            var updatePositions = function updatePositions(positions) {
@@ -26126,9 +25748,13 @@ webpackJsonp([0],[
 	            mesh.updateMeshPositions(updatePositions);
 	            mesh.refreshBoundingInfo();
 
+	            var obj = BABYLON.OBJExport.OBJ(mesh, false);
+
+	            mesh.dispose();
+
 	            return {
-	                position: buildingStartPoint,
-	                obj: BABYLON.OBJExport.OBJ(mesh, false)
+	                obj: obj,
+	                position: { x: buildingStartPoint.x, z: buildingStartPoint.y, y: 0 }
 	            };
 	        }
 	    }]);

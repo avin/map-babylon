@@ -2535,7 +2535,7 @@ webpackJsonp([1],[
 	});
 	exports["default"] = {
 	    babylonDebug: false,
-	    LODLevel: 100
+	    LODLevel: 500
 	};
 	module.exports = exports["default"];
 
@@ -2581,27 +2581,52 @@ webpackJsonp([1],[
 	    _createClass(_default, [{
 	        key: '_init',
 	        value: function _init() {
-	            if (this.data.custom_model) {
-	                //Если у элемента индивидуальная модель
-	                //TODO
-	            } else {
-	                    //Иначе используем модель типа
-	                    if (this.type.default_model) {
-	                        //Только если модель для данного типа загружена
-	                        this.mesh = this.scene.models[this.type.default_model].createInstance(this._id);
-	                        this.mesh.scaling = new BABYLON.Vector3(1, 1, 1);
+	            var _this = this;
 
-	                        var elementPosition = this.data.location.position;
-	                        this.mesh.position = new BABYLON.Vector3(elementPosition.x, elementPosition.y, elementPosition.z);
+	            this.loadModel().then(function () {
+	                console.log(_this.mesh);
+	                _this.initMaterials();
+
+	                //При отдалении фигура становится невидимой
+	                _this.setLODLevel(_options2['default'].LODLevel);
+
+	                _get(Object.getPrototypeOf(_default.prototype), '_init', _this).call(_this);
+	            });
+	        }
+	    }, {
+	        key: 'loadModel',
+	        value: function loadModel() {
+	            var _this2 = this;
+
+	            return new Promise(function (resolve, reject) {
+	                if (_this2.data.custom_model) {
+	                    //Если у элемента индивидуальная модель
+	                    var modelName = _this2.data._id;
+
+	                    BABYLON.SceneLoader.ImportMesh("", "./assets/models/custom/", modelName + '.obj', _this2.scene, function (meshes) {
+	                        if (meshes[0]) {
+	                            _this2.mesh = meshes[0];
+	                            var elementPosition = _this2.data.location.position;
+	                            _this2.mesh.position = new BABYLON.Vector3(elementPosition.x, elementPosition.y, elementPosition.z);
+	                            var elementRotation = _this2.data.location.rotation;
+	                            _this2.mesh.rotation = new BABYLON.Vector3(elementRotation.x, elementRotation.y, elementRotation.z);
+	                            resolve();
+	                        }
+	                        reject();
+	                    });
+	                } else {
+	                    //Иначе используем модель типа
+	                    if (_this2.type.default_model) {
+	                        //Только если модель для данного типа загружена
+	                        _this2.mesh = _this2.scene.models[_this2.type.default_model].createInstance(_this2._id);
+	                        _this2.mesh.scaling = new BABYLON.Vector3(1, 1, 1);
+
+	                        var elementPosition = _this2.data.location.position;
+	                        _this2.mesh.position = new BABYLON.Vector3(elementPosition.x, elementPosition.y, elementPosition.z);
+	                        resolve();
 	                    }
 	                }
-
-	            this.initMaterials();
-
-	            //При отдалении фигура становится невидимой
-	            this.setLODLevel(_options2['default'].LODLevel);
-
-	            _get(Object.getPrototypeOf(_default.prototype), '_init', this).call(this);
+	            });
 	        }
 
 	        /**
@@ -2610,7 +2635,7 @@ webpackJsonp([1],[
 	    }, {
 	        key: 'enableHighlight',
 	        value: function enableHighlight() {
-	            var _this = this;
+	            var _this3 = this;
 
 	            var highlightRelated = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
@@ -2622,7 +2647,7 @@ webpackJsonp([1],[
 
 	                //Обходим элементы системы в поисках потомков
 	                _.each(this.scene.elements, function (element) {
-	                    if (_.eq(element.parent, _this)) {
+	                    if (_.eq(element.parent, _this3)) {
 	                        //И подсвечиваем их и их потомков
 	                        element.enableHighlight(true);
 	                    }
@@ -5565,7 +5590,7 @@ webpackJsonp([1],[
 /* 105 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	/* WEBPACK VAR INJECTION */(function(fetch) {'use strict';
 
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
@@ -5713,6 +5738,7 @@ webpackJsonp([1],[
 
 	            //Привязываем управление к камере
 	            this.playerCamera.attachControl(this.getEngine().getRenderingCanvas(), false);
+	            console.log(this.playerCamera);
 
 	            //Через эту камеру будут производиться действия с элементами
 	            this.cameraToUseForPointers = this.playerCamera;
@@ -5754,9 +5780,21 @@ webpackJsonp([1],[
 	        value: function _initContent() {
 	            var _this2 = this;
 
-	            //Расставляем все элементы из базы элементов
-	            _.each(this.elementCatalog, function (elementData) {
-	                _this2.elementDispatcher.createElement(elementData);
+	            //Подгружаем элементы из базы
+	            fetch('/map/data').then(function (response) {
+	                return response.json();
+	            }).then(function (response) {
+	                if (response.data) {
+	                    var data = _.keyBy(response.data, '_id');
+	                    _this2.elementCatalog = Object.assign(_this2.elementCatalog, data);
+
+	                    console.log(_this2.elementCatalog);
+
+	                    //Расставляем все элементы из базы элементов
+	                    _.each(_this2.elementCatalog, function (elementData) {
+	                        _this2.elementDispatcher.createElement(elementData);
+	                    });
+	                }
 	            });
 
 	            this.beforeRender = function () {
@@ -5911,6 +5949,7 @@ webpackJsonp([1],[
 
 	exports['default'] = _default;
 	module.exports = exports['default'];
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ },
 /* 106 */

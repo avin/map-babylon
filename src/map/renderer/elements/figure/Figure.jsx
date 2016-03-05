@@ -10,27 +10,48 @@ export default class extends AbstractElement {
     }
 
     _init() {
-        if (this.data.custom_model) {
-            //Если у элемента индивидуальная модель
-            //TODO
-        } else {
-            //Иначе используем модель типа
-            if (this.type.default_model) {
-                //Только если модель для данного типа загружена
-                this.mesh = this.scene.models[this.type.default_model].createInstance(this._id);
-                this.mesh.scaling = new BABYLON.Vector3(1, 1, 1);
+        this.loadModel().then(() => {
+            console.log(this.mesh);
+            this.initMaterials();
 
-                let elementPosition = this.data.location.position;
-                this.mesh.position = new BABYLON.Vector3(elementPosition.x, elementPosition.y, elementPosition.z);
+            //При отдалении фигура становится невидимой
+            this.setLODLevel(options.LODLevel);
+
+            super._init();
+        });
+    }
+
+    loadModel() {
+        return new Promise((resolve, reject) => {
+            if (this.data.custom_model) {
+                //Если у элемента индивидуальная модель
+                let modelName = this.data._id;
+
+                BABYLON.SceneLoader.ImportMesh("", "./assets/models/custom/", `${modelName}.obj`, this.scene, (meshes) => {
+                    if (meshes[0]){
+                        this.mesh = meshes[0];
+                        let elementPosition = this.data.location.position;
+                        this.mesh.position = new BABYLON.Vector3(elementPosition.x, elementPosition.y, elementPosition.z);
+                        let elementRotation = this.data.location.rotation;
+                        this.mesh.rotation = new BABYLON.Vector3(elementRotation.x, elementRotation.y, elementRotation.z);
+                        resolve();
+                    }
+                    reject();
+                });
+
+            } else {
+                //Иначе используем модель типа
+                if (this.type.default_model) {
+                    //Только если модель для данного типа загружена
+                    this.mesh = this.scene.models[this.type.default_model].createInstance(this._id);
+                    this.mesh.scaling = new BABYLON.Vector3(1, 1, 1);
+
+                    let elementPosition = this.data.location.position;
+                    this.mesh.position = new BABYLON.Vector3(elementPosition.x, elementPosition.y, elementPosition.z);
+                    resolve();
+                }
             }
-        }
-
-        this.initMaterials();
-
-        //При отдалении фигура становится невидимой
-        this.setLODLevel(options.LODLevel);
-
-        super._init();
+        })
     }
 
     /**

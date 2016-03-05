@@ -5,10 +5,17 @@ import Scene from './scene.jsx';
 import Renderer from './renderer.jsx';
 
 let layers = 'buildings';
-let {zoom, minX, minY} = {zoom: 16, minX: 40117, minY: 20369};
-let {maxX, maxY} = {maxX: 40125, maxY: 20372};
-
+let zoom = 16;
+//let minX = 40106;
+let minX = 40111;
+//let maxX = 40144;
+let maxX = 40121;
+//let minY = 20348;
+let minY = 20367;
+//let maxY = 20378;
+let maxY = 20375;
 let apiKey = keys.mapzen_tiles;
+let id = 1;
 
 let renderer = new Renderer('converter-canvas');
 let scene = new Scene(renderer.engine);
@@ -27,75 +34,90 @@ let currentTile = 0;
  * Получаем данные о строениях для заданного тайла
  */
 let parseTile = (x, y) => {
-    fetch(`https://vector.mapzen.com/osm/${layers}/${zoom}/${x}/${y}.json?api_key=${apiKey}`)
-        .then(function (response) {
-            return response.json()
-        })
-        .then(function (data) {
+    setTimeout(() => {
+        fetch(`https://vector.mapzen.com/osm/${layers}/${zoom}/${x}/${y}.json?api_key=${apiKey}`)
+            .then((response) => response.json())
+            .then((data) => new Promise((resolve, reject) => {
 
-            //Преобразуем полученные данные
-            let buildings = data.features.map((feature) => {
-                return {
-                    coordinates: _.get(feature, 'geometry.coordinates.0', []),
-                    properties: _.get(feature, 'properties', {})
+                //Преобразуем полученные данные
+                let buildings = [];
+                _.each(data.features, (feature) => {
+                    if (_.get(feature, 'geometry.type') === "Polygon") {
+                        buildings.push({
+                            coordinates: _.get(feature, 'geometry.coordinates.0', []),
+                            properties: _.get(feature, 'properties', {}),
+                            id: id++,
+                        })
+                    }
+                });
+
+                let buildingsSaved = 0;
+
+                //Если строений нет - переходим к другому тайлу
+                if (_.isEmpty(buildings)) {
+                    resolve();
                 }
-            });
 
-            buildings.forEach((building) => {
+                buildings.forEach((building) => {
 
-                //Создаем obj для строения
-                let objData = scene.generateBuildingObjData(building.coordinates, _.get(building.properties, 'levels', 1));
-                building.objData = objData;
+                    //Создаем obj для строения
+                    building.objData = scene.generateBuildingObjData(building.coordinates, _.get(building.properties, 'height', 3));
 
-                //Сохраняем данные на сервере
-                fetch('/converter/save', {
-                    method: 'post',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        building: building,
-                    })
-                }).then((response) => {
-
-                    //Парсим полученные json данные
-                    return response.json()
-
-                }).then((response) => {
-
-                    //Выводим результат
-                    if (response.message) {
-                        resultsElement.innerHTML = resultsElement.innerHTML + `<span class="text-success">${sanitizeHtml(response.message)}</span><br>`;
-                    } else {
-                        resultsElement.innerHTML = resultsElement.innerHTML + `<span class="text-danger">${sanitizeHtml(response.error)}</span><br>`;
+                    if (id == 470) {
+                        debugger;
                     }
 
-                    //Автоскрол результатов
-                    resultsElement.scrollTop = resultsElement.scrollHeight;
+                    //Сохраняем данные на сервере
+                    fetch('/converter/save', {
+                        method: 'post',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            building: building,
+                        })
+                    }).then((response) => response.json())
+                        .then((response) => {
+
+                            //Выводим результат
+                            //if (response.message) {
+                            //    resultsElement.innerHTML = resultsElement.innerHTML + `<span
+                            // class="text-success">${sanitizeHtml(response.message)}</span><br>`; } else {
+                            // resultsElement.innerHTML = resultsElement.innerHTML + `<span
+                            // class="text-danger">${sanitizeHtml(response.error)}</span><br>`; }
+
+                            //Автоскрол результатов
+                            resultsElement.scrollTop = resultsElement.scrollHeight;
+
+                            buildingsSaved++;
+
+                            //Если сохранили все элементы - переходим к другому тайлу
+                            if (buildingsSaved === buildings.length) {
+                                resolve();
+                            }
+
+                        })
+                        .catch((err) => {
+                            console.log('fetch converter/save error', err)
+                        });
+                });
+
+            })
+                .then(() => {
+                    currentTile++;
+                    if (currentTile < tiles.length) {
+                        parseTile(tiles[currentTile].x, tiles[currentTile].y);
+                    }
 
                     //Обновляем прогрессбар
-
-                    currentTile++;
-
-                    if (currentTile < tiles.length) {
-
-                        parseTile(tiles[currentTile].x, tiles[currentTile].y);
-                        let progress = currentTile / (tiles.length - 1) * 100;
-                        console.log(currentTile, tiles.length, progress);
-
-                        $('.progress-bar').css('width', progress + '%').attr('aria-valuenow', progress);
-                    }
-
-                }).catch(function (err) {
-                    console.log('fetch converter/save error', err)
-                });
-            });
-
-        })
-        .catch(function (err) {
-            console.log('parsing failed', err)
-        });
+                    let progress = currentTile / (tiles.length - 1) * 100;
+                    $('.progress-bar').css('width', progress + '%').attr('aria-valuenow', progress);
+                })
+                .catch((err) => {
+                    console.log('parsing failed', err)
+                }));
+    });
 };
 
 parseTile(tiles[currentTile].x, tiles[currentTile].y);

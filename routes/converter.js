@@ -3,9 +3,6 @@ var express = require('express');
 var router = express.Router();
 var fs = require('fs');
 var path = require('path');
-var MongoClient = require('mongodb').MongoClient;
-var assert = require('assert');
-var config = require('../config');
 
 /**
  * Обновление манифеста obj файла
@@ -139,59 +136,55 @@ router.get('/', (req, res, next) => {
     res.render('converter', data);
 });
 
-//Подключаемся к базе
-MongoClient.connect(config.mongoUrl, (err, mongoDb) => {
-    assert.equal(null, err);
+/* GET Конвертер. Сохранение */
+router.post('/save', function (req, res, next) {
+    let mongoDb = req.app.get('mongoDb');
 
-    console.log('Connected to mongoDB');
+    res.setHeader('Content-Type', 'application/json');
 
-    /* GET Конвертер. Сохранение */
-    router.post('/save', function (req, res, next) {
-        res.setHeader('Content-Type', 'application/json');
+    let data = req.body.building;
 
-        let data = req.body.building;
+    let id = `building_${data.id}`;
 
-        let id = `building_${data.properties.area}`;
+    let objFileName = path.resolve(`${__dirname}/../public/assets/models/custom/${id}.obj`);
 
-        let objFileName = path.resolve(`${__dirname}/../public/assets/models/custom/${id}.obj`);
-
-        //Сохраняем элемент в базе
-        saveElement(mongoDb, {
-            "_id": id,
-            "type_id": 3,
-            "properties": data.properties,
-            "parent": 1,
-            "location": {
-                "position": {
-                    x: data.objData.position.x || 0,
-                    y: data.objData.position.y || 0,
-                    z: data.objData.position.z || 0,
-                },
-                "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                }
+    //Сохраняем элемент в базе
+    saveElement(mongoDb, {
+        "_id": id,
+        "type_id": 3,
+        "properties": data.properties,
+        "parent": 1,
+        "location": {
+            "position": {
+                x: data.objData.position.x || 0,
+                y: data.objData.position.y || 0,
+                z: data.objData.position.z || 0,
             },
-            "custom_model": true,
-            "history": [],
-            "states": []
-        }).then(() => (new Promise((resolve, reject) => {
-            fs.writeFile(objFileName, data.objData.obj, function (err) {
-                if (err) {
-                    reject(err);
-                }
-                resolve();
-            });
-        }))).then(updateManifest(`${objFileName}.manifest`))
-            .then(() => {
-                res.send(JSON.stringify({message: `File ${objFileName} saved`}));
-            })
-            .catch((error) => {
-                res.send(JSON.stringify({error: 'Eelement save error!'}));
-            });
+            "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+            }
+        },
+        "custom_model": true,
+        "history": [],
+        "states": []
+    }).then(() => (new Promise((resolve, reject) => {
+        fs.writeFile(objFileName, data.objData.obj, function (err) {
+            if (err) {
+                reject(err);
+            }
+            resolve();
+        });
+    }))).then(updateManifest(`${objFileName}.manifest`))
+        .then(() => {
+            res.send(JSON.stringify({message: `File ${objFileName} saved`}));
+        })
+        .catch((error) => {
+            res.send(JSON.stringify({error: error}));
+        });
 
-    });
 });
+
 
 module.exports = router;

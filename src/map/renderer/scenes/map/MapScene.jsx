@@ -100,6 +100,7 @@ export default class extends SceneWithElements {
 
         //Привязываем управление к камере
         this.playerCamera.attachControl(this.getEngine().getRenderingCanvas(), false);
+        console.log(this.playerCamera);
 
         //Через эту камеру будут производиться действия с элементами
         this.cameraToUseForPointers = this.playerCamera;
@@ -134,10 +135,22 @@ export default class extends SceneWithElements {
      */
     _initContent() {
 
-        //Расставляем все элементы из базы элементов
-        _.each(this.elementCatalog, (elementData) => {
-            this.elementDispatcher.createElement(elementData);
-        });
+        //Подгружаем элементы из базы
+        fetch(`/map/data`)
+            .then((response) => response.json())
+            .then((response) => {
+                if (response.data) {
+                    let data = _.keyBy(response.data, '_id');
+                    this.elementCatalog = Object.assign(this.elementCatalog, data);
+
+                    console.log(this.elementCatalog);
+
+                    //Расставляем все элементы из базы элементов
+                    _.each(this.elementCatalog, (elementData) => {
+                        this.elementDispatcher.createElement(elementData);
+                    });
+                }
+            });
 
         this.beforeRender = () => {
             let delta = this.getEngine().getDeltaTime() / 1000.0;
