@@ -2603,7 +2603,7 @@ webpackJsonp([1],[
 	                    //Если у элемента индивидуальная модель
 	                    var modelName = _this2.data._id;
 
-	                    BABYLON.SceneLoader.ImportMesh("", "./assets/models/custom/", modelName + '.obj', _this2.scene, function (meshes) {
+	                    BABYLON.SceneLoader.ImportMesh("", "map/model/", modelName + '.obj', _this2.scene, function (meshes) {
 	                        if (meshes[0]) {
 	                            _this2.mesh = meshes[0];
 	                            var elementPosition = _this2.data.location.position;

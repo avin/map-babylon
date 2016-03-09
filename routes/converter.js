@@ -5,128 +5,107 @@ var fs = require('fs');
 var path = require('path');
 
 /**
- * Обновление манифеста obj файла
- * @param manifestFile
- * @returns {Promise}
- */
-let updateManifest = (manifestFile) => (new Promise(function (resolve, reject) {
-    let manifest;
-
-    fs.readFile(manifestFile, 'utf8', function (err, data) {
-        let newManifest = {
-            version: 1,
-            enableSceneOffline: true,
-            enableTexturesOffline: true
-        };
-
-        if (err) {
-
-            //Манифеста нет - создаем новый
-            manifest = newManifest;
-
-            fs.writeFile(manifestFile, JSON.stringify(manifest), function (err) {
-                if (err) {
-                    reject(new Error("Manifest save error"));
-                }
-
-                resolve();
-            });
-
-        } else {
-
-            //Мафнифест есть - обновляем версию
-            try {
-                manifest = JSON.parse(data);
-                manifest.version++;
-            } catch (e) {
-                manifest = newManifest;
-            }
-
-            fs.writeFile(manifestFile, JSON.stringify(manifest), function (err) {
-                if (err) {
-                    reject(new Error("Manifest save error"));
-                }
-
-                resolve();
-            });
-        }
-    });
-}));
-
-/**
  * Сохранить элемент в базе
  * @param db
  * @param data
  */
 let saveElement = (db, data) => (new Promise((resolve, reject) => {
+
     //Данные обязательно должны присутствовать
     if (!data) {
-        return false;
+        reject(new Error('Empty data'));
     }
 
-    /**
-     * Определяем что элемент в базе
-     * @param db
-     */
-    var elementIsPresent = (db) => (new Promise((resolve, reject) => {
-        db.collection('elements').find({_id: data._id}).count((err, count) => {
-            if (err) {
-                reject(new Error('MongoDb elementIsPresent error'))
-            }
-            resolve(!!count);
-        });
-    }));
+    let cursor = db.collection('elements').find({_id: data.id});
 
-    /**
-     * Добавляем элемент
-     * @param db
-     */
-    var insertDocument = (db) => (
-        new Promise((resolve, reject) => {
+    cursor.toArray((err, docs) => {
+        if (err) {
+            reject(err);
+        }
+
+        let element = docs[0];
+        if (element) {
+            //Если элемент есть - обновляем
+            db.collection('elements').updateOne(
+                {
+                    _id: data._id
+                },
+                {
+                    $set: data,
+                    $currentDate: {"lastModified": true}
+                }, (err, results) => {
+                    if (err) {
+                        reject(new Error('MongoDb updateDocument error'))
+                    }
+                    resolve(results);
+                });
+        } else {
             db.collection('elements').insertOne(data, (err, results) => {
                 if (err) {
                     reject(new Error('MongoDb insertDocument error'))
                 }
                 resolve(results)
             });
-        }));
+        }
+    });
 
-    /**
-     * Обновляем элемента
-     * @param db
-     */
-    var updateDocument = (db) => (
-        new Promise((resolve, reject) => {
-                db.collection('elements').updateOne(
-                    {
-                        _id: data._id
+}));
+
+/**
+ * Сохранение модели в базе
+ * @param db
+ * @param id
+ * @param obj
+ */
+let saveModel = (db, id, obj) => (new Promise((resolve, reject) => {
+
+    //Данные обязательно должны присутствовать
+    if (!id) {
+        reject(new Error('Wrong params'))
+    }
+
+    let cursor = db.collection('models').find({_id: id});
+    cursor.toArray((err, docs) => {
+        if (err) {
+            reject(err);
+        }
+
+        let model = docs[0];
+        if (model) {
+            let manifest = model.manifest;
+            manifest.version++;
+
+            db.collection('models').updateOne(
+                {
+                    _id: id
+                },
+                {
+                    $set: {
+                        obj,
+                        manifest
                     },
-                    {
-                        $set: data,
-                        $currentDate: {"lastModified": true}
-                    }, (err, results) => {
-                        if (err) {
-                            reject(new Error('MongoDb updateDocument error'))
-                        }
-                        resolve(results);
-                    });
-            }
-        ));
-
-    //Проверяем если ли такой элемент в базе
-    elementIsPresent(db).then((isPresent) => {
-            if (isPresent) {
-                //Если есть - обновляем
-                return updateDocument(db);
-            } else {
-                //Если нет - добавляем
-                return insertDocument(db);
-            }
-        })
-        .then(() => resolve())
-        .catch(function (error) {
-            reject(error);
-        });
+                    $currentDate: {"lastModified": true}
+                }, (err, results) => {
+                    if (err) {
+                        reject(new Error('MongoDb updateDocument error'))
+                    }
+                    resolve(results);
+                });
+        } else {
+            let manifest = {"version": 1, "enableSceneOffline": true, "enableTexturesOffline": true};
+            db.collection('models').insertOne(
+                {
+                    _id: id,
+                    obj,
+                    manifest
+                }, (err, results) => {
+                    if (err) {
+                        reject(new Error('MongoDb insertDocument error'))
+                    }
+                    resolve(results)
+                });
+        }
+    });
 
 }));
 
@@ -169,22 +148,12 @@ router.post('/save', function (req, res, next) {
         "custom_model": true,
         "history": [],
         "states": []
-    }).then(() => (new Promise((resolve, reject) => {
-        fs.writeFile(objFileName, data.objData.obj, function (err) {
-            if (err) {
-                reject(err);
-            }
-            resolve();
-        });
-    }))).then(updateManifest(`${objFileName}.manifest`))
-        .then(() => {
-            res.send(JSON.stringify({message: `File ${objFileName} saved`}));
-        })
-        .catch((error) => {
-            res.send(JSON.stringify({error: error}));
-        });
+    }).then(saveModel(mongoDb, id, data.objData.obj)).then(() => {
+        res.send(JSON.stringify({data: [], message: 'Model saved'}));
+    }).catch((err) => {
+        res.send(JSON.stringify({error: err.message}));
+    });
 
 });
-
 
 module.exports = router;

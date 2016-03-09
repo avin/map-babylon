@@ -27,7 +27,7 @@ export default class extends AbstractElement {
                 //Если у элемента индивидуальная модель
                 let modelName = this.data._id;
 
-                BABYLON.SceneLoader.ImportMesh("", "./assets/models/custom/", `${modelName}.obj`, this.scene, (meshes) => {
+                BABYLON.SceneLoader.ImportMesh("", "map/model/", `${modelName}.obj`, this.scene, (meshes) => {
                     if (meshes[0]){
                         this.mesh = meshes[0];
                         let elementPosition = this.data.location.position;

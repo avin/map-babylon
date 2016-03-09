@@ -63,10 +63,6 @@ let parseTile = (x, y) => {
                     //Создаем obj для строения
                     building.objData = scene.generateBuildingObjData(building.coordinates, _.get(building.properties, 'height', 3));
 
-                    if (id == 470) {
-                        debugger;
-                    }
-
                     //Сохраняем данные на сервере
                     fetch('/converter/save', {
                         method: 'post',
